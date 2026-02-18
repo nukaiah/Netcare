@@ -3,6 +3,8 @@ import addressSchema from '../Models/AddressModel.js'
 import { sendResponse, sendErrorResponse, sendValidationResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 const addressRouter = express.Router();
+import sendNotification from "../MiddleWares/fcm.js";
+
 
 addressRouter.post("/insertUpdate", async (req, res, next) => {
     try {
@@ -39,6 +41,10 @@ addressRouter.get("/getAll",async(req,res,next)=>{
     } catch (error) {
         return sendErrorResponse(res, false, error.message, {})
     }
+});
+
+addressRouter.post("/notifyme",async(req,res,next)=>{
+    sendNotification("cAwo682mQDO7bhlaoZ4OBG:APA91bGCpuXNnL9adA06ufLHsTfPJ1NAibWAcInOmdXOmB54h_ILashjyVgtTVWcn2jI41kdc6K4qd0mHy7xCWgNSB9rTgU6AjaphEb1HQE3ztRCDJ4vqM8","ShiftMatch","Hey you have new shift available.Please check your que");
 });
 
 export default addressRouter;
