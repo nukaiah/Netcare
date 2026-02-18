@@ -7,20 +7,20 @@ async function sendEmail() {
   let transporter = nodemailer.createTransport({
     host: "smtp.office365.com",
     port: 587,
-    secure: false, // use TLS
+    secure: false,
     auth: {
-      user: "bluhealth@bluecloudsoftech.com", // your Outlook email
-      pass: "gqvzqbkjphfrwvmx" // Outlook password / app password
+      user: process.env.FROM_EMAIL_ID,
+      pass: process.env.FROM_EMAIL_PASSWORD
     }
   });
 
   // email options
   let mailOptions = {
-    from: 'bluhealth@bluecloudsoftech.com', // sender
-    to: "yskyadav03@gmail.com", // list of recipients
-    subject: "Test Email from Node.js", // Subject line
-    text: "Hello! This is a test email from Node.js via Outlook.", // plain text
-    html: "<b>Hello!</b> This is a test email from Node.js via Outlook." // HTML body
+    from: process.env.FROM_EMAIL_ID,
+    to: "yskyadav03@gmail.com",
+    subject: "Test Email from Node.js",
+    text: "Hello! This is a test email from Node.js via Outlook.",
+    html: "<b>Hello!</b> This is a test email from Node.js via Outlook."
   };
 
   try {

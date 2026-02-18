@@ -1,4 +1,10 @@
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+
+
 
 export const checkAuth = (req, res, next) => {
   try {
@@ -9,7 +15,7 @@ export const checkAuth = (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: "Unauthorized request - Token missing" });
     }
-    const verify = jwt.verify(token, 'this is login data');
+    const verify = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = verify._id;
     req.roleId = verify.roleId;
     next();

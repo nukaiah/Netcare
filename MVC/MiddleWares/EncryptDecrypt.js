@@ -22,12 +22,5 @@ export function decrypt(encryptedText) {
     return decrypted;
 }
 
-// Example Usage
-const originalText = "Hello, Node.js!";
-const encryptedText = encrypt(originalText);
-console.log("Encrypted:", encryptedText);
-
-const decryptedText = decrypt(encryptedText);
-console.log("Decrypted:", decryptedText);
 
 

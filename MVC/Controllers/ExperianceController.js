@@ -30,13 +30,21 @@ experienceRouter.post('/insert', checkAuth, upload.single('file'), async (req, r
 
 experienceRouter.post('/update', checkAuth, async (req, res, next) => {
     try {
-        const data = req.body || {};
-        const response = await experienceSchema.findByIdAndUpdate({ _id: req.body.sId }, { $set: data }, { new: true, runValidators: true });
+        const {sId,data} = req.body || {};
+        if (!sId) {
+            return sendErrorResponse(res, false, "Experience ID is required");
+        }
+
+        if (!data || Object.keys(data).length === 0) {
+            return sendErrorResponse(res, false, "Update data is required");
+        }
+        const response = await experienceSchema.findByIdAndUpdate(sId, { $set: data }, { new: true, runValidators: true });
         return sendResponse(res, true, "Experiance updated successfully", response);
     } catch (error) {
         return sendErrorResponse(res, false, error.message);
     }
 });
+
 
 experienceRouter.delete('/delete', checkAuth, async (req, res, next) => {
     try {
@@ -74,7 +82,6 @@ experienceRouter.post('/insertNoFile', checkAuth, async (req, res, next) => {
         return sendErrorResponse(res, false, error.message);
     }
 });
-
 
 
 
