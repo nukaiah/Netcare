@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 
 
-const mongoURI = process.env.CLOUD_DB_URL_TEST;
+const mongoURI = process.env.LOCAL_DB_URL;
 
 mongoose.set("strictQuery", false);
 
