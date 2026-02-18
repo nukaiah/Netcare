@@ -5,17 +5,42 @@ import { sendResponse, sendValidationResponse, sendDuplicateResponse, sendErrorR
 import ShiftSchema from '../Models/ShiftPostModel.js';
 import ShiftApplication from '../Models/ShiftApplication.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
+import addressSchema from '../Models/AddressModel.js'
+import { decrypt } from '../MiddleWares/EncryptDecrypt.js';
+import { sendEmail, sendBulkEmails } from '../MiddleWares/Email.js';
 
 
-ShiftRouter.post('/create', async (req, res, next) => {
+ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
     try {
-        const shiftData = req.body;
-        const response = await ShiftSchema.insertOne(shiftData);
+        const { location } = req.body || {};
+        const query = { city: location };
+        const response = await ShiftSchema.create(req.body);
+        const usersData = await addressSchema.aggregate([
+            { $match: query },
+            {
+                $lookup: {
+                    from: "healthcareworkers",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "users"
+                }
+            },
+            { $unwind: "$users" },
+            { $project: { email: "$users.email" } }
+        ]);
+
+        var data = usersData
+            .filter(e => e.email)
+            .map(e => decrypt(e.email));
+        sendBulkEmails(data);
         return sendResponse(res, true, "Shift created successfully", response);
+
     } catch (error) {
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
+
+
         }
         if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
@@ -25,7 +50,6 @@ ShiftRouter.post('/create', async (req, res, next) => {
         return sendErrorResponse(res, false, error.message);
     }
 });
-
 
 
 ShiftRouter.post('/getAll', checkAuth, async (req, res, next) => {

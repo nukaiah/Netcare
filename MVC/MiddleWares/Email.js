@@ -2,28 +2,29 @@ import nodemailer from 'nodemailer'
 import dotenv from 'dotenv';
 dotenv.config(); 
 
-async function sendEmail() {
-  // create reusable transporter object
-  let transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    port: 587,
+// create reusable transporter object
+
+let transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
     secure: false,
     auth: {
-      user: process.env.FROM_EMAIL_ID,
-      pass: process.env.FROM_EMAIL_PASSWORD
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
     }
   });
 
-  // email options
-  let mailOptions = {
-    from: process.env.FROM_EMAIL_ID,
-    to: "yskyadav03@gmail.com",
+
+async function sendEmail(data) {
+
+  try {
+    let mailOptions = {
+    from: process.env.SMTP_USER,
+    to: data,
     subject: "Test Email from Node.js",
     text: "Hello! This is a test email from Node.js via Outlook.",
     html: "<b>Hello!</b> This is a test email from Node.js via Outlook."
   };
-
-  try {
     let info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
   } catch (error) {
@@ -31,6 +32,17 @@ async function sendEmail() {
   }
 }
 
-export default sendEmail;
+async function sendBulkEmails(emailList) {
+  const batchSize = 10;
+
+  for (let i = 0; i < emailList.length; i += batchSize) {
+    const batch = emailList.slice(i, i + batchSize);
+    await Promise.all(batch.map(email => sendEmail(email)));
+  }
+}
+
+
+export {sendEmail,sendBulkEmails};
+
 
 
