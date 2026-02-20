@@ -185,7 +185,7 @@ healthcareworkerRouter.post('/getById', checkAuth, async (req, res, next) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-            
+
             {
                 $addFields: {
                     addressData: { $ifNull: ["$addressData", {}] },
@@ -244,15 +244,15 @@ healthcareworkerRouter.post('/getAll', checkAuth, async (req, res, next) => {
 
 healthcareworkerRouter.post('/updateDetails', checkAuth, async (req, res, next) => {
     try {
-        const  updatedData   = req.body || {};
-        if(!updatedData.dob){
+        const updatedData = req.body || {};
+        if (!updatedData.dob) {
             return sendValidationResponse(res, "Dob is required");
         }
-        if(!updatedData.gender){
+        if (!updatedData.gender) {
             return sendValidationResponse(res, "Gender is required");
         }
 
-        const result = await healthCareWorkerSchema.findByIdAndUpdate( req.userId, { $set: updatedData }, { new: true, runValidators: true });
+        const result = await healthCareWorkerSchema.findByIdAndUpdate(req.userId, { $set: updatedData }, { new: true, runValidators: true });
         return sendResponse(res, true, "Profile details updated", result);
     } catch (error) {
         console.log(error.message);
@@ -269,7 +269,7 @@ healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), 
             "imageUrl": req.file.filename
         };
 
-        const result = await healthCareWorkerSchema.findByIdAndUpdate( req.userId, { $set: data1 }, { new: true, runValidators: true });
+        const result = await healthCareWorkerSchema.findByIdAndUpdate(req.userId, { $set: data1 }, { new: true, runValidators: true });
         return sendResponse(res, true, "Profile image updated", result);
     } catch (error) {
         return sendErrorResponse(res, false, error.message, {})
@@ -288,7 +288,7 @@ healthcareworkerRouter.post('/updateVerificationStatus', checkAuth, async (req, 
             return sendErrorResponse(res, false, "Verification status is required");
         }
 
-        const response = await healthCareWorkerSchema.findByIdAndUpdate(userId, { $set: {verificationStatus} }, { runValidators: true, new: true });
+        const response = await healthCareWorkerSchema.findByIdAndUpdate(userId, { $set: { verificationStatus } }, { runValidators: true, new: true });
 
         if (!response) {
             return sendErrorResponse(res, false, "Data not found");
@@ -330,7 +330,7 @@ healthcareworkerRouter.post('/getCurrentUser', checkAuth, async (req, res, next)
 
                 }
             },
-            
+
             {
                 $unwind: {
                     path: "$addressData",
@@ -356,47 +356,43 @@ healthcareworkerRouter.post('/getCurrentUser', checkAuth, async (req, res, next)
     }
 });
 
+healthcareworkerRouter.post('/updateFcm', checkAuth,async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { fcm, type } = req.body;
+
+        if (!fcm) {
+            return sendValidationResponse(res, "fcm key is missing");
+        }
+
+        let updateQuery = {};
+
+        if (type === "Login") {
+            updateQuery = { $addToSet: { fcm: fcm } };
+        } else if (type === "Logout") {
+            updateQuery = { $pull: { fcm: fcm } };
+        } else {
+            return sendValidationResponse(res, "Invalid type");
+        }
+
+        const response = await healthCareWorkerSchema.findByIdAndUpdate(
+            userId,
+            updateQuery,
+            { runValidators: true, new: true }
+        );
+
+        return sendResponse(res, true, "FCM updated successfully", response);
+
+    } catch (error) {
+        return sendErrorResponse(res, false, error.message, {});
+    }
+});
+
+
 
 
 export default healthcareworkerRouter;
 
-
-/*
-
-healthcareworkerRouter.put('/updateStatus', checkAuth, async (req, res, next) => {
-    try {
-        const verificationStatus = req.body||{}
-        if(!verificationStatus){}
-        const result = await healthCareWorkerSchema.updateOne({ _id: req.userId }, { $set: { verificationStatus: req.body.verificationStatus } });
-        if (result) {
-            sendResponse(res, true, "Status updated successfully", result);
-        }
-        else {
-            sendResponse(res, false, "Failed to update status", {})
-        }
-    } catch (error) {
-        sendErrorResponse(res, false, error.message, {});
-
-    }
-});
-
-
-healthcareworkerRouter.post('/updateStatus',async(req,res,next)=>{
-    try {
-        var query = {_id:req.body.id};
-        var updateData = {"verificationStatus":req.body.verificationStatus}
-        const result = await healthCareWorkerSchema.findByIdAndUpdate(query,{$set:updateData},{upsert:true});
-        if(result){
-            sendResponse(res,true,"User status Updated",result);
-        }
-        else{
-            sendResponse(res,false,"Failed to update status",result);
-        }
-    } catch (error) {
-        sendErrorResponse(res,false,error.message,{});
-    }
-});
-*/
 
 
 

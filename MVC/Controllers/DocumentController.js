@@ -1,6 +1,6 @@
 import express from 'express';
 import documentSchema from '../Models/DocumentsModel.js';
-import { sendErrorResponse, sendResponse, sendValidationResponse } from '../MiddleWares/Response.js';
+import { sendErrorResponse, sendResponse, sendValidationResponse,sendDuplicateResponse } from '../MiddleWares/Response.js';
 import upload from '../MiddleWares/UploadFile.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import mongoose from 'mongoose';
@@ -21,15 +21,9 @@ documentRouter.post("/upload", checkAuth, upload.single("file"), async (req, res
     const response = await documentSchema.insertOne(docData);
     return sendResponse(res, true, "File uploaded successfully", response);
   } catch (error) {
-    console.log(error.message);
-    console.log(error.code);
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({
-        status: false,
-        message: 'Validation Error',
-        errors: messages
-      });
+      return sendValidationResponse(res,messages);
     }
     if (error.code === 11000) {
       return sendDuplicateResponse(res, "File already exists", error.keyValue);

@@ -5,18 +5,23 @@ import { sendResponse, sendValidationResponse, sendDuplicateResponse, sendErrorR
 import ShiftSchema from '../Models/ShiftPostModel.js';
 import ShiftApplication from '../Models/ShiftApplication.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
-import addressSchema from '../Models/AddressModel.js'
-import { decrypt } from '../MiddleWares/EncryptDecrypt.js';
-import { sendEmail, sendBulkEmails } from '../MiddleWares/Email.js';
+import { sendBulkNotification } from '../MiddleWares/fcm.js';
+import preferenceSchema from '../Models/PreferenceModel.js'
 
 
 ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
     try {
-        const { location } = req.body || {};
-        const query = { city: location };
+        const { locationId, departmentId } = req.body || {};
+        console.log(locationId);
+        console.log(departmentId);
         const response = await ShiftSchema.create(req.body);
-        const usersData = await addressSchema.aggregate([
-            { $match: query },
+        const usersData = await preferenceSchema.aggregate([
+            {
+                $match: {
+                    "preferredLocation.id": new mongoose.Types.ObjectId(locationId),
+                    "preferredDepartments.id": new mongoose.Types.ObjectId(departmentId)
+                }
+            },
             {
                 $lookup: {
                     from: "healthcareworkers",
@@ -26,20 +31,24 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
                 }
             },
             { $unwind: "$users" },
-            { $project: { email: "$users.email" } }
+            { $project: { fcm: "$users.fcm" } }
         ]);
+        console.log(usersData);
 
-        var data = usersData
-            .filter(e => e.email)
-            .map(e => decrypt(e.email));
-        sendBulkEmails(data);
+        const tokens = [
+            ...new Set(
+                usersData
+                    .filter(e => e.fcm?.length)
+                    .flatMap(e => e.fcm)
+            )
+        ]
+        await sendBulkNotification(res,tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.location} matches your preferences.`);
         return sendResponse(res, true, "Shift created successfully", response);
 
     } catch (error) {
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
-
 
         }
         if (error.code === 11000) {
@@ -59,6 +68,7 @@ ShiftRouter.post('/getAll', checkAuth, async (req, res, next) => {
             {
                 $match: query
             },
+            { $sort: { createdAt: -1 } },
             {
                 $lookup: {
                     from: "shiftapplications",
@@ -188,9 +198,20 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
     }
 });
 
+
 ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
     try {
+        const page = Number(req.body.page) || 1;
+        const limit = Math.min(Number(req.body.limit) || 10, 100);
+        const skip = (page - 1) * limit;
         const response = await ShiftSchema.aggregate([
+            { $sort: { createdAt: -1 } },
+            {
+                $skip: skip
+            },
+            {
+                $limit: limit
+            },
             {
                 $lookup: {
                     from: "healthcareworkers",
@@ -248,9 +269,6 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
     }
 
 });
-
-
-
 
 
 export default ShiftRouter;

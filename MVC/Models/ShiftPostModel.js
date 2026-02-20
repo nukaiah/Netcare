@@ -39,6 +39,10 @@ const ShiftSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    locationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     location: {
         type: String,
         required: true

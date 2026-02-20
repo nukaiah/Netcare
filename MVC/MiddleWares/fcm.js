@@ -1,6 +1,8 @@
 import admin from "../config/firebase.js";
+import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
+import { sendErrorResponse } from "./Response.js";
 
-const sendNotification = async (deviceToken, title, body) => {
+const sendNotification = async (deviceToken, title, body, data = {}) => {
   if (!deviceToken) throw new Error("deviceToken is required");
   if (!title) throw new Error("title is required");
   if (!body) throw new Error("body is required");
@@ -9,12 +11,66 @@ const sendNotification = async (deviceToken, title, body) => {
     await admin.messaging().send({
       token: deviceToken,
       notification: { title, body },
+      data
     });
-    console.log("Notification sent successfully");
+
+    // console.log("Single notification sent successfully");
   } catch (error) {
-    console.error("Error sending notification:", error);
-    throw error;
+    return sendErrorResponse(res,false,error.message);
+    // console.error("Error sending notification:", error.message);
   }
 };
 
-export default sendNotification;
+const sendBulkNotification = async (res,deviceTokens, title, body, data = {}) => {
+
+  if (!title) throw new Error("title is required");
+  if (!body) throw new Error("body is required");
+
+  const chunkSize = 500;
+  let totalSuccess = 0;
+  let totalFailure = 0;
+  let invalidTokens = [];
+
+  for (let i = 0; i < deviceTokens.length; i += chunkSize) {
+    const chunk = deviceTokens.slice(i, i + chunkSize);
+
+    try {
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens: chunk,
+        notification: { title, body },
+        data
+      });
+
+      totalSuccess += response.successCount;
+      totalFailure += response.failureCount;
+
+      response.responses.forEach((resp, index) => {
+        if (!resp.success) {
+          invalidTokens.push(chunk[index]);
+        }
+      });
+
+    } catch (error) {
+      return sendErrorResponse(res,false,error.message);
+      // console.error("Batch error:", error.message);
+    }
+  }
+
+  // Remove invalid tokens from DB
+  if (invalidTokens.length > 0) {
+    await healthCareWorkerSchema.updateMany(
+      {},
+      { $pull: { fcmTokens: { $in: invalidTokens } } }
+    );
+  }
+
+  // console.log(`Total Success: ${totalSuccess}`);
+  // console.log(`Total Failed: ${totalFailure}`);
+
+  return {
+    success: totalSuccess,
+    failed: totalFailure
+  };
+};
+
+export { sendNotification, sendBulkNotification };

@@ -36,32 +36,12 @@ const healthCareWorkerSchema = new mongoose.Schema(
         dob: { type: String, default: null },
         gender: { type: String, enum: ["Male", "Female", "Other"], default: null },
         imageUrl: { type: String, default: null },
-        departments: {
-            type: [
-                {
-                    id: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        required: true
-                    },
-                    name: {
-                        type: String,
-                        required: true
-                    }
-                }
-            ],
-            validate: {
-                validator: function (v) {
-                    return v.length <= 5;
-                },
-                message: "You must select between 1 and 5 departments"
-            },
-            
-        },
-
-
         verificationStatus: { type: String, required: true, enum: ["Pending", "Verified", "Rejected"], default: "Pending" },
-
-        accountStatus: { type: String, required: true, enum: ["Active", "Inactive", "Suspended"], default: "Active" }
+        accountStatus: { type: String, required: true, enum: ["Active", "Inactive", "Suspended"], default: "Active" },
+        fcm:{
+            type:[String],
+            default:[]
+        }
     },
     {
         timestamps: true,

@@ -16,6 +16,14 @@ const shiftApplicationSchema = new mongoose.Schema({
     },
     respondedAt: {
         type: Date
+    },
+    startTime:{
+        type:Date,
+        default:null
+    },
+    endTime:{
+        type:Date,
+        default:null
     }
 },{timestamps:true});
 
