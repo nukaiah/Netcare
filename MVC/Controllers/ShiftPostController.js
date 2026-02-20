@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 const ShiftRouter = express.Router();
 import { sendResponse, sendValidationResponse, sendDuplicateResponse, sendErrorResponse } from '../MiddleWares/Response.js';
 import ShiftSchema from '../Models/ShiftPostModel.js';

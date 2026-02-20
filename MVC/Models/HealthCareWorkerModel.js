@@ -4,10 +4,35 @@ import { hashPassword } from '../MiddleWares/PasswordHash.js';
 
 const healthCareWorkerSchema = new mongoose.Schema(
     {
-        roleId: { type: Number, required: true },
-        fullName: { type: String, required: true },
-        email: { type: String, required: true, trim: true, lowercase: true, set: encrypt, get: decrypt },
-        mobileNumber: { type: String, required: true, trim: true, set: encrypt, get: decrypt },
+        roleId: {
+            type: Number,
+            required: true,
+            enum: [1, 2, 3]
+        },
+        fullName: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 3,
+            maxlength: 100
+        },
+        email: {
+            type: String,
+            required: true,
+            trim: true,
+            lowercase: true,
+            set: encrypt,
+            get: decrypt,
+
+        },
+        mobileNumber: {
+            type: String,
+            required: true,
+            trim: true,
+            set: encrypt,
+            get: decrypt
+        },
+
         password: {
             type: String,
             trim: true,
@@ -32,15 +57,46 @@ const healthCareWorkerSchema = new mongoose.Schema(
                 }
             }
         },
-        roleName: { type: String, required: true },
-        dob: { type: String, default: null },
-        gender: { type: String, enum: ["Male", "Female", "Other"], default: null },
-        imageUrl: { type: String, default: null },
-        verificationStatus: { type: String, required: true, enum: ["Pending", "Verified", "Rejected"], default: "Pending" },
-        accountStatus: { type: String, required: true, enum: ["Active", "Inactive", "Suspended"], default: "Active" },
-        fcm:{
-            type:[String],
-            default:[]
+
+        dob: {
+            type: Date,
+            default: null
+        },
+        designationId: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        gender: {
+            type: String,
+            enum: ["Male", "Female", "Other"],
+            default: null,
+            trim: true
+        },
+        imageUrl: {
+            type: String,
+            default: null,
+            trim: true
+        },
+        verificationStatus: {
+            type: String,
+            required: true,
+            enum: ["Pending", "Verified", "Rejected"],
+            default: "Pending"
+        },
+        accountStatus: {
+            type: String,
+            required: true,
+            enum: ["Active", "Inactive", "Suspended"],
+            default: "Active"
+        },
+        fcm: {
+            type: [String],
+            default: []
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     },
     {
@@ -51,12 +107,32 @@ const healthCareWorkerSchema = new mongoose.Schema(
     },
 );
 
-healthCareWorkerSchema.index({ email: 1, mobileNumber: 1 }, { unique: true });
+healthCareWorkerSchema.index({ email: 1 }, { unique: true });
+healthCareWorkerSchema.index({ mobileNumber: 1 }, { unique: true });
 
-healthCareWorkerSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
-    this.password = await hashPassword(this.password);
+
+healthCareWorkerSchema.pre('save', async function (next) {
+    try {
+        if (!this.isModified('password')) return next();
+        this.password = await hashPassword(this.password);
+        next();
+    } catch (err) {
+        next(err);
+    }
 });
 
+healthCareWorkerSchema.statics.validateEmail = function (email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+healthCareWorkerSchema.statics.validateMobileNumber = function (number) {
+  const phoneRegex = /^(\+?\d{1,4}[-.\s]?)?(\(?\d{1,5}\)?[-.\s]?){1,5}\d{1,5}$/;
+  return phoneRegex.test(number);
+};
+
 export default mongoose.model('Healthcareworker', healthCareWorkerSchema);
+
+
+
 

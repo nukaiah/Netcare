@@ -3,10 +3,10 @@ import addressSchema from '../Models/AddressModel.js'
 import { sendResponse, sendErrorResponse, sendValidationResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 const addressRouter = express.Router();
-import {sendNotification} from "../MiddleWares/fcm.js";
 
 
-addressRouter.post("/insertUpdate", async (req, res, next) => {
+
+addressRouter.post("/insertUpdate",checkAuth, async (req, res, next) => {
     try {
         const {sId,...addressData} = req.body;
         let response;
@@ -27,14 +27,14 @@ addressRouter.post("/insertUpdate", async (req, res, next) => {
         if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
             const value = error.keyValue[field];
-            return sendDuplicateResponse(res, "Duplicate address found", error.keyValue);
+            return sendDuplicateResponse(res, "Duplicate address found!.You have already have an adress,you can not add another", error.keyValue);
         }
         return sendErrorResponse(res, false, error.message, {});
     }
 
 });
 
-addressRouter.get("/getAll",async(req,res,next)=>{
+addressRouter.get("/getAll",checkAuth,async(req,res,next)=>{
     try {
         const response = await addressSchema.find();
         return sendResponse(res, true, "Address added successfully", response);
@@ -43,9 +43,6 @@ addressRouter.get("/getAll",async(req,res,next)=>{
     }
 });
 
-addressRouter.post("/notifyme",async(req,res,next)=>{
-    const {token,body} = req.body;
-    sendNotification(token,"ShiftMatch",body);
-});
+
 
 export default addressRouter;

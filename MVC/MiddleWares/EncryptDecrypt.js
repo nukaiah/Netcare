@@ -2,16 +2,16 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config(); 
 
-const algorithm = 'aes-256-cbc';
-const key = Buffer.from(process.env.ENCRYPT_DECRYPT_KEY, 'utf-8'); // 32-byte key
-const iv = Buffer.from('0123456789012345', 'utf-8'); // 16-byte IV
+const algorithm = process.env.ALGORITHM_NAME;
+const key = Buffer.from(process.env.ALGORITHM_KEY, 'utf-8');
+const iv = Buffer.from(process.env.ALGORITHM_IV, 'utf-8');
 
 // Encrypt Function
 export function encrypt(text) {
     let cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(text, 'utf-8', 'hex');
     encrypted += cipher.final('hex');
-    return encrypted; // Only returning encrypted text (no IV prefix)
+    return encrypted;
 }
 
 // Decrypt Function
@@ -21,6 +21,5 @@ export function decrypt(encryptedText) {
     decrypted += decipher.final('utf-8');
     return decrypted;
 }
-
 
 
