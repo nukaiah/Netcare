@@ -2,7 +2,7 @@ import admin from "../config/firebase.js";
 import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
 import { sendErrorResponse } from "./Response.js";
 
-const sendNotification = async (deviceToken, title, body, data = {}) => {
+const sendNotification = async (res,deviceToken, title, body, data = {}) => {
   if (!deviceToken) throw new Error("deviceToken is required");
   if (!title) throw new Error("title is required");
   if (!body) throw new Error("body is required");
@@ -14,10 +14,10 @@ const sendNotification = async (deviceToken, title, body, data = {}) => {
       data
     });
 
-    // console.log("Single notification sent successfully");
+    console.log("Single notification sent successfully");
   } catch (error) {
-    return sendErrorResponse(res,false,error.message);
-    // console.error("Error sending notification:", error.message);
+    return sendErrorResponse(res,error.message);
+    console.error("Error sending notification:", error.message);
   }
 };
 
@@ -51,7 +51,7 @@ const sendBulkNotification = async (res,deviceTokens, title, body, data = {}) =>
       });
 
     } catch (error) {
-      return sendErrorResponse(res,false,error.message);
+      return sendErrorResponse(res,error.message);
       // console.error("Batch error:", error.message);
     }
   }

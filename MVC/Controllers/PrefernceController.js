@@ -29,7 +29,7 @@ preferenceRouter.post("/create", async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, "Preference already exists to you", error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

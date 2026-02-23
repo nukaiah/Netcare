@@ -11,7 +11,7 @@ const shiftApplicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: [ "Accepted", "Rejected"],
+        enum: [ "Applied","Approve","Rejected"],
         required: true
     },
     respondedAt: {

@@ -20,7 +20,7 @@ documentTypeRouter.post('/create', checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
 
     }
 });
@@ -36,7 +36,7 @@ documentTypeRouter.post('/getAll', async (req, res, next) => {
         return sendResponse(res, true, "Document found successfully", response);
 
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

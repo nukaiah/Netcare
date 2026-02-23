@@ -27,7 +27,7 @@ bankRouter.post('/insertUpdate', checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, "Duplicate bank detials found", error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

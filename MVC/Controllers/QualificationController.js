@@ -10,7 +10,7 @@ const qualificationRouter = express.Router();
 qualificationRouter.post('/insert', checkAuth, upload.single('file'), async (req, res, next) => {
     try {
         if (!req.file) {
-            return sendErrorResponse(res, false, "No file uploaded");
+            return sendErrorResponse(res, "No file uploaded");
         }
         const data1 = {
             "documentUrl": req.file.filename
@@ -23,7 +23,7 @@ qualificationRouter.post('/insert', checkAuth, upload.single('file'), async (req
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -32,11 +32,11 @@ qualificationRouter.delete('/delete', checkAuth, async (req, res, next) => {
     try {
         const { sId } = req.body;
         if (!sId) {
-            return sendErrorResponse(res, false, "Qualification ID is required");
+            return sendErrorResponse(res, "Qualification ID is required");
         }
         const response = await qualificationSchema.findById(sId);
         if (!response) {
-            return sendErrorResponse(res, false, "Qualification not found");
+            return sendErrorResponse(res, "Qualification not found");
         }
 
         if (response.documentUrl) {
@@ -45,7 +45,7 @@ qualificationRouter.delete('/delete', checkAuth, async (req, res, next) => {
         const deleteResponse = await qualificationSchema.findByIdAndDelete(sId);
         return sendResponse(res, true, "Qualification deleted successfully", deleteResponse);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -56,7 +56,7 @@ qualificationRouter.post('/update', checkAuth, async (req, res, next) => {
         const response = await qualificationSchema.findByIdAndUpdate({ _id: req.body.sId }, { $set: data }, { new: true, runValidators: true });
         return sendResponse(res, true, "Qualification updated successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -67,17 +67,17 @@ qualificationRouter.post('/updateFile', checkAuth, upload.single("file"), async 
         const { sId } = req.body || {};
 
         if (!sId) {
-            return sendErrorResponse(res, false, "Qualification id is required");
+            return sendErrorResponse(res, "Qualification id is required");
         }
 
         if (!req.file) {
-            return sendErrorResponse(res, false, "No file uploaded");
+            return sendErrorResponse(res, "No file uploaded");
         }
 
         const existingQualification = await qualificationSchema.findById(sId);
 
         if (!existingQualification) {
-            return sendErrorResponse(res, false, "Experience not found");
+            return sendErrorResponse(res, "Experience not found");
         }
 
         if (existingQualification.documentUrl) {
@@ -88,7 +88,7 @@ qualificationRouter.post('/updateFile', checkAuth, upload.single("file"), async 
         return sendResponse(res, true, "Qualification updated successfully", response);
     } catch (error) {
 
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -97,11 +97,11 @@ qualificationRouter.post('/deleteFile', checkAuth, async (req, res, next) => {
     try {
         const { sId } = req.body || {};
         if (!sId) {
-            return sendErrorResponse(res, false, "Qualification id is required");
+            return sendErrorResponse(res, "Qualification id is required");
         }
         const existingResponse = await qualificationSchema.findById(sId);
         if (!existingResponse) {
-            return sendErrorResponse(res, false, "Qualification not found");
+            return sendErrorResponse(res, "Qualification not found");
         }
 
         if (existingResponse.documentUrl) {
@@ -110,7 +110,7 @@ qualificationRouter.post('/deleteFile', checkAuth, async (req, res, next) => {
         const response = await qualificationSchema.findByIdAndUpdate(sId, { $set: { documentUrl: "" } }, { new: true });
         return sendResponse(res, true, "Qulification file deleted successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

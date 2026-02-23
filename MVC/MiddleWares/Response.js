@@ -8,17 +8,6 @@ export function sendResponse(res, status, message, data = {}) {
 
 
 
-export function sendErrorResponse(res, status, message, error = {}) {
-    return res.status(500).json({
-        status,
-        message,
-        error
-    });
-};
-
-
-
-
 
 
 export function sendValidationResponse(res,error = {}) {
@@ -53,5 +42,13 @@ export function sendLoginResponse(res, data = {}, token) {
         message:"Login Successfully",
         data,
         token
+    });
+};
+
+export function sendErrorResponse(res, message, error = {}) {
+    return res.status(500).json({
+        status:false,
+        message,
+        error
     });
 };

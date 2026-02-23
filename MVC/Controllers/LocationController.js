@@ -8,7 +8,7 @@ locationRouter.post('/createState',checkAuth, async (req, res, next) => {
     try {
         const stateData = req.body || {};
         if (stateData.type != 1) {
-            return sendErrorResponse(res, false, "Type value should be 1");
+            return sendErrorResponse(res, "Type value should be 1");
         }
         const response = await locationSchema.insertOne(stateData);
         return sendResponse(res, true, "State created successfully", response);
@@ -22,7 +22,7 @@ locationRouter.post('/createState',checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -30,10 +30,10 @@ locationRouter.post('/createCity', async (req, res, next) => {
     try {
         const cityData = req.body || {};
         if (cityData.type != 2) {
-            return sendErrorResponse(res, false, "Type value should be 2");
+            return sendErrorResponse(res, "Type value should be 2");
         }
         if (!cityData.parentId) {
-            return sendErrorResponse(res, false, "parentId is required to create city");
+            return sendErrorResponse(res, "parentId is required to create city");
         }
         const response = await locationSchema.insertOne(cityData);
         return sendResponse(res, true, "City created successfully", response);
@@ -47,7 +47,7 @@ locationRouter.post('/createCity', async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -57,7 +57,7 @@ locationRouter.post('/getAllLocations',checkAuth, async (req, res, next) => {
         const response = await locationSchema.find({ type: type });
         return sendResponse(res, true, "Location found", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -67,7 +67,7 @@ locationRouter.post("/getAllCity",checkAuth, async (req, res, next) => {
         const response = await locationSchema.find({ parentId: parentId });
         return sendResponse(res, true, "Location found", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

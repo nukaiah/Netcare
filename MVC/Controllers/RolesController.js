@@ -10,7 +10,7 @@ roleRouter.get("/getAll",checkAuth, async (req, res, next) => {
         const rolesData = response.filter(e => e.roleId !== 1);
         return sendResponse(res, true, "Roles found successfully", rolesData);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -20,7 +20,7 @@ roleRouter.post('/create',checkAuth, async (req, res, next) => {
         var response = await rolesSchema.insertOne(rolesData);
         return sendResponse(res, true, response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

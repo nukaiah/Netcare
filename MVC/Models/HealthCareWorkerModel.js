@@ -9,6 +9,7 @@ const healthCareWorkerSchema = new mongoose.Schema(
             required: true,
             enum: [1, 2, 3]
         },
+
         fullName: {
             type: String,
             required: true,
@@ -16,6 +17,7 @@ const healthCareWorkerSchema = new mongoose.Schema(
             minlength: 3,
             maxlength: 100
         },
+
         email: {
             type: String,
             required: true,
@@ -25,6 +27,7 @@ const healthCareWorkerSchema = new mongoose.Schema(
             get: decrypt,
 
         },
+
         mobileNumber: {
             type: String,
             required: true,
@@ -62,38 +65,45 @@ const healthCareWorkerSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
+
         designationId: {
             type: String,
             trim: true,
             default: null
         },
+
         gender: {
             type: String,
             enum: ["Male", "Female", "Other"],
             default: null,
             trim: true
         },
+
         imageUrl: {
             type: String,
             default: null,
             trim: true
         },
+
         verificationStatus: {
             type: String,
             required: true,
             enum: ["Pending", "Verified", "Rejected"],
             default: "Pending"
         },
+
         accountStatus: {
             type: String,
             required: true,
             enum: ["Active", "Inactive", "Suspended"],
             default: "Active"
         },
+
         fcm: {
             type: [String],
             default: []
         },
+        
         isDeleted: {
             type: Boolean,
             default: false

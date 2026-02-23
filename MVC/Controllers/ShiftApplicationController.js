@@ -20,7 +20,7 @@ shiftApplicationRouter.post('/showInterest', checkAuth, async (req, res, next) =
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -66,7 +66,7 @@ shiftApplicationRouter.post("/getById",checkAuth, async (req, res, next) => {
             ]);
         return sendResponse(res, true, "Applicants found", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 
 });
@@ -91,7 +91,7 @@ shiftApplicationRouter.post("/punchTime", checkAuth,async (req, res, next) => {
         const response = await shiftApplicationSchema.findByIdAndUpdate(sId,{ $set: query }, { runValidators: true, new: true });
         return sendResponse(res, true, message, response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

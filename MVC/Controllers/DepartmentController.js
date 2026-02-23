@@ -20,7 +20,7 @@ departmentRouter.post('/create', checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -31,7 +31,7 @@ departmentRouter.get("/getAll", async (req, res, next) => {
         return sendResponse(res, true, "Deparments found successfully", response);
     } catch (error) {
         console.log(error.message);
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

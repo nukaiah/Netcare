@@ -23,7 +23,7 @@ experienceRouter.post('/insert', checkAuth, upload.single('file'), async (req, r
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -32,16 +32,16 @@ experienceRouter.post('/update', checkAuth, async (req, res, next) => {
     try {
         const {sId,data} = req.body || {};
         if (!sId) {
-            return sendErrorResponse(res, false, "Experience ID is required");
+            return sendErrorResponse(res, "Experience ID is required");
         }
 
         if (!data || Object.keys(data).length === 0) {
-            return sendErrorResponse(res, false, "Update data is required");
+            return sendErrorResponse(res, "Update data is required");
         }
         const response = await experienceSchema.findByIdAndUpdate(sId, { $set: data }, { new: true, runValidators: true });
         return sendResponse(res, true, "Experiance updated successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -50,11 +50,11 @@ experienceRouter.delete('/delete', checkAuth, async (req, res, next) => {
     try {
         const { sId } = req.body;
         if (!sId) {
-            return sendErrorResponse(res, false, "Experience ID is required");
+            return sendErrorResponse(res, "Experience ID is required");
         }
         const response = await experienceSchema.findById(sId);
         if (!response) {
-            return sendErrorResponse(res, false, "Experience not found");
+            return sendErrorResponse(res, "Experience not found");
         }
 
         if (response.documentUrl) {
@@ -63,7 +63,7 @@ experienceRouter.delete('/delete', checkAuth, async (req, res, next) => {
         const deleteResponse = await experienceSchema.findByIdAndDelete(sId);
         return sendResponse(res, true, "Experiance updated successfully", deleteResponse);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -79,7 +79,7 @@ experienceRouter.post('/insertNoFile', checkAuth, async (req, res, next) => {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -92,18 +92,18 @@ experienceRouter.post('/updateFile', checkAuth, upload.single("file"), async (re
 
 
         if (!sId) {
-            return sendErrorResponse(res, false, "Experience ID is required");
+            return sendErrorResponse(res, "Experience ID is required");
         }
 
         if (!req.file) {
-            return sendErrorResponse(res, false, "No file uploaded");
+            return sendErrorResponse(res, "No file uploaded");
         }
 
         const existingExperience = await experienceSchema.findById(sId);
 
 
         if (!existingExperience) {
-            return sendErrorResponse(res, false, "Experience not found");
+            return sendErrorResponse(res, "Experience not found");
         }
 
         if (existingExperience.documentUrl) {
@@ -114,7 +114,7 @@ experienceRouter.post('/updateFile', checkAuth, upload.single("file"), async (re
         return sendResponse(res, true, "Experiance updated successfully", response);
     } catch (error) {
 
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -123,12 +123,12 @@ experienceRouter.post('/deleteFile', checkAuth, async (req, res, next) => {
     try {
         const { sId } = req.body || {};
         if (!sId) {
-            return sendErrorResponse(res, false, "Experience ID is required");
+            return sendErrorResponse(res, "Experience ID is required");
         }
         const existingResponse = await experienceSchema.findById(sId);
 
         if (!existingResponse) {
-            return sendErrorResponse(res, false, "Experience not found");
+            return sendErrorResponse(res, "Experience not found");
         }
 
         if (existingResponse.documentUrl) {
@@ -139,7 +139,7 @@ experienceRouter.post('/deleteFile', checkAuth, async (req, res, next) => {
 
         return sendResponse(res, true, "Experiance file deleted successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

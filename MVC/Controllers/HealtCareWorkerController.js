@@ -34,7 +34,7 @@ healthcareworkerRouter.post('/signUp', async (req, res, next) => {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -72,7 +72,7 @@ healthcareworkerRouter.post('/login', async (req, res, next) => {
         );
         return sendLoginResponse(res, workerResponse, jwttoken);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -91,7 +91,7 @@ healthcareworkerRouter.post('/getAll', checkAuth, async (req, res, next) => {
             return sendResponse(res, false, "Failed to find users", result);
         }
     } catch (error) {
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
 
     }
 });
@@ -113,9 +113,9 @@ healthcareworkerRouter.post('/updateDetails', checkAuth, async (req, res, next) 
             return sendValidationResponse(res, [{ field: 'gender', message: 'Gender must be Male, Female, or Other' }]);
         }
 
-        if (!designationId) {
-            return sendValidationResponse(res, [{ field: 'designationId', message: 'Designation is required' }]);
-        }
+        // if (!designationId) {
+        //     return sendValidationResponse(res, [{ field: 'designationId', message: 'Designation is required' }]);
+        // }
 
         const result = await healthCareWorkerSchema.findByIdAndUpdate(
             req.userId,
@@ -126,7 +126,7 @@ healthcareworkerRouter.post('/updateDetails', checkAuth, async (req, res, next) 
         return sendResponse(res, true, "Profile details updated", result);
 
     } catch (error) {
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
     }
 });
 
@@ -148,7 +148,7 @@ healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), 
         return sendResponse(res, true, "Profile image updated", result);
     } catch (error) {
 
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
     }
 });
 
@@ -166,13 +166,13 @@ healthcareworkerRouter.post('/updateVerificationStatus', checkAuth, async (req, 
         const response = await healthCareWorkerSchema.findByIdAndUpdate(userId, { $set: { verificationStatus } }, { runValidators: true, new: true });
 
         if (!response) {
-            return sendErrorResponse(res, false, "Data not found");
+            return sendErrorResponse(res, "Data not found");
         }
 
         return sendResponse(res, true, "Verification status updated successfully", response);
 
     } catch (error) {
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
     }
 }
 );
@@ -206,7 +206,7 @@ healthcareworkerRouter.post('/updateFcm', checkAuth, async (req, res) => {
         return sendResponse(res, true, "FCM updated successfully", response);
 
     } catch (error) {
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
     }
 });
 
@@ -272,7 +272,7 @@ healthcareworkerRouter.post('/getCurrentUser', checkAuth, async (req, res, next)
         }));
         return sendResponse(res, true, 'User found', data);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -411,7 +411,7 @@ healthcareworkerRouter.post('/getById', checkAuth, async (req, res, next) => {
         }));
         return sendResponse(res, true, 'User found', data);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 

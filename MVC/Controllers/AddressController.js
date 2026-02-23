@@ -2,6 +2,7 @@ import express from 'express';
 import addressSchema from '../Models/AddressModel.js'
 import { sendResponse, sendErrorResponse, sendValidationResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
+import { sendNotification } from '../MiddleWares/fcm.js';
 const addressRouter = express.Router();
 
 
@@ -29,7 +30,7 @@ addressRouter.post("/insertUpdate",checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, "Duplicate address found!.You have already have an adress,you can not add another", error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message, {});
+        return sendErrorResponse(res, error.message, {});
     }
 
 });
@@ -39,8 +40,12 @@ addressRouter.get("/getAll",checkAuth,async(req,res,next)=>{
         const response = await addressSchema.find();
         return sendResponse(res, true, "Address added successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message, {})
+        return sendErrorResponse(res, error.message, {})
     }
+});
+
+addressRouter.post('/fcm',async(req,res,next)=>{
+    await sendNotification(res,"camlYxWA1GQjDl_14HoxPx:APA91bG1ZoxBiy9kb-MWKLLpJWUzvkZpJQBrdXah2jfua0ju-yI_jJFFdwjvuFx6j1dEfXFYNTMWS-hJK27fc3cQjZb2zGDVlfVf0XprZDw9Q7Q6TbkbS58","Message From Admin","Hi,Ak How are you man?");
 });
 
 

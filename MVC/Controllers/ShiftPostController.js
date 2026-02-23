@@ -56,7 +56,7 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -117,7 +117,7 @@ ShiftRouter.post('/getAll', checkAuth, async (req, res, next) => {
         ]);
         return sendResponse(res, true, "Shift found Successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -194,7 +194,7 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
         ]);
         return sendResponse(res, true, "Shift found successfully", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -265,7 +265,7 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
         ]);
         return sendResponse(res, true, "Data found", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 
 });

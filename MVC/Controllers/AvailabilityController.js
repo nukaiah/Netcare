@@ -17,7 +17,7 @@ availabilityRouter.post("/create", async (req, res, next) => {
         if (error.code === 11000) {
             return sendDuplicateResponse(res, "Shifts already exists");
         }
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
@@ -28,7 +28,7 @@ availabilityRouter.post('/getAvailability', checkAuth, async (req, res, next) =>
         var response = await avaialabilitySchema.find(query);
         return sendResponse(res, true, "Data found", response);
     } catch (error) {
-        return sendErrorResponse(res, false, error.message);
+        return sendErrorResponse(res, error.message);
     }
 });
 
