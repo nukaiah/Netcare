@@ -1,8 +1,9 @@
 import express from 'express';
 import addressSchema from '../Models/AddressModel.js'
-import { sendResponse, sendErrorResponse, sendValidationResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
+import { sendResponse, sendErrorResponse, sendValidationResponse, sendDuplicateResponse, sendNotFoundResponse } from '../MiddleWares/Response.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { sendNotification } from '../MiddleWares/fcm.js';
+import { sendEmail } from '../MiddleWares/Email.js';
 const addressRouter = express.Router();
 
 
@@ -35,14 +36,20 @@ addressRouter.post("/insertUpdate", checkAuth, async (req, res, next) => {
 
 });
 
-addressRouter.get("/getAll", checkAuth, async (req, res, next) => {
+
+addressRouter.post("/getByUserId", checkAuth, async (req, res, next) => {
     try {
-        const response = await addressSchema.find();
-        return sendResponse(res, true, "Address added successfully", response);
+        const { userId } = req.body || {};
+        if (!userId) {
+            return sendNotFoundResponse(res, "Hospital id is required");
+        }
+        const response = await addressSchema.find({userId});
+        return sendResponse(res, true, "Address fetched successfully", response);
     } catch (error) {
         return sendErrorResponse(res, error.message, {})
     }
 });
+
 
 addressRouter.post('/fcm', async (req, res, next) => {
     const token = req.body.token;
@@ -51,6 +58,9 @@ addressRouter.post('/fcm', async (req, res, next) => {
     return sendResponse(res, true, "sent", response);
 });
 
+addressRouter.post('/sendEmail', async (req, res, next) => {
+    const response = await sendEmail('cherukuwadaanandkrishna@gmail.com');
+});
 
 
 export default addressRouter;
