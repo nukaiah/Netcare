@@ -1,9 +1,10 @@
 import express from 'express';
 import documentSchema from '../Models/DocumentsModel.js';
-import { sendErrorResponse, sendResponse, sendValidationResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
+import { sendErrorResponse, sendResponse, sendValidationResponse, sendDuplicateResponse, sendNotFoundResponse } from '../MiddleWares/Response.js';
 import upload from '../MiddleWares/UploadFile.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import mongoose from 'mongoose';
+import { deleteFile } from '../MiddleWares/UploadFile.js';
 
 const documentRouter = express.Router();
 
@@ -14,53 +15,182 @@ documentRouter.post("/upload", checkAuth, upload.single("file"), async (req, res
     if (!req.file) {
       return sendErrorResponse(res, "No file uploaded");
     }
-    const data1 = {
+    const data = {
       "documentUrl": req.file.filename
     };
-    const docData = { ...data1, ...req.body };
-    const response = await documentSchema.insertOne(docData);
+    const docData = { ...data, ...req.body };
+    const response = await documentSchema.create(docData);
     return sendResponse(res, true, "File uploaded successfully", response);
   } catch (error) {
+    if (req.file) {
+      try {
+        deleteFile(`uploads/${req.file.filename}`);
+      } catch (error) {
+
+      }
+    }
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map(err => err.message);
       return sendValidationResponse(res, messages);
     }
     if (error.code === 11000) {
-      return sendDuplicateResponse(res, "File already exists", error.keyValue);
+      return sendDuplicateResponse(res, "Document already uploaded", error.keyValue);
     }
     return sendErrorResponse(res, error.message);
   }
 });
 
-documentRouter.post("/getAll", checkAuth, async (req, res, next) => {
+
+documentRouter.post("/getAll", async (req, res, next) => {
   try {
-    var query = { "hospitalId": req.body.id };
-    const response = await documentSchema.find(query);
+    var query = { "hospitalId": new mongoose.Types.ObjectId(req.body.id) };
+    const response = await documentSchema.aggregate([
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: "documenttypes",
+          as: "documenttypesData",
+          localField: "documentTypeId",
+          foreignField: "_id"
+        }
+      },
+      { $unwind: { path: "$documenttypesData", preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          documentName: "$documenttypesData.documentName",
+        }
+      },
+      { $project: { documenttypesData: 0 } }
+    ]
+    );
     return sendResponse(res, true, "Documents found", response);
   } catch (error) {
     return sendErrorResponse(res, error.message);
   }
 });
 
+
 documentRouter.post("/verify", checkAuth, async (req, res, next) => {
   try {
-    var query = { _id: req.body.id };
-    var updateData = { "verificationStatus": req.body.verificationStatus, "verifiedBy": req.userId, "verifiedAt": new Date(), "rejectionReason": req.body.rejectionReason }
+    const query = { _id: req.body.id };
+    const updateData = { "verificationStatus": req.body.verificationStatus, "verifiedBy": req.userId, "verifiedAt": new Date(), "rejectionReason": req.body.rejectionReason }
     const response = await documentSchema.findByIdAndUpdate(query, { $set: updateData }, { upsert: true });
     return sendResponse(res, true, "Status got changed", response);
   } catch (error) {
     return sendErrorResponse(res, error.message);
   }
-
 });
 
 
-documentRouter.post('/delete', async (req, res, next) => {
+documentRouter.post('/delete', async (req, res) => {
   try {
-    const response = await documentSchema.findByIdAndUpdate(sId, { $set: { documentUrl: documentUrl } }, { runValidators: true, new: true });
-    return sendResponse(res, true, "File updated", response);
+    const { sId } = req.body || {};
+
+    if (!sId) {
+      return sendValidationResponse(res, ["Document ID is required"]);
+    }
+
+    const existedData = await documentSchema.findById(sId);
+
+    if (!existedData) {
+      return sendNotFoundResponse(res, "Document not found");
+    }
+
+    const response = await documentSchema.findByIdAndUpdate(
+      sId,
+      { $set: { documentUrl: null } },
+      { runValidators: true, new: true }
+    );
+
+    if (response && existedData.documentUrl) {
+      try {
+        deleteFile(`uploads/${existedData.documentUrl}`);
+      } catch (error) {
+
+      }
+    }
+
+    return sendResponse(res, true, "File deleted successfully", response);
+
   } catch (error) {
+    return sendErrorResponse(res, "Something went wrong");
+  }
+});
+
+
+documentRouter.post("/updateFile", upload.single("file"), async (req, res) => {
+  try {
+    const { sId } = req.body || {};
+    if (!sId) {
+      if (req.file) {
+        deleteFile(`uploads/${req.file.filename}`);
+      }
+      return sendValidationResponse(res, ["Document ID is required"]);
+    }
+    if (!req.file) {
+      return sendValidationResponse(res, ["No file uploaded"]);
+    }
+    const oldDocument = await documentSchema.findByIdAndUpdate(
+      sId,
+      { $set: { documentUrl: req.file.filename,verificationStatus:"ReUpload" } },
+      { new: false }
+    );
+
+    if (!oldDocument) {
+      deleteFile(`uploads/${req.file.filename}`);
+      return sendNotFoundResponse(res, "Document not found");
+    }
+    if (oldDocument.documentUrl) {
+      try {
+        deleteFile(`uploads/${oldDocument.documentUrl}`);
+      } catch (error) { }
+    }
+
+    return sendResponse(res, true, "Document updated successfully");
+
+  } catch (error) {
+    if (req.file) {
+      try {
+        deleteFile(`uploads/${req.file.filename}`);
+      } catch (error) { }
+    }
     return sendErrorResponse(res, error.message);
+  }
+}
+);
+
+
+documentRouter.post('/updateDetails', async (req, res) => {
+  try {
+    const { sId, issuedBy, issueDate, expiryDate } = req.body || {};
+
+    if (!sId) {
+      return sendValidationResponse(res, ["Document ID is required"]);
+    }
+
+    const updateData = {};
+
+    if (issuedBy !== undefined) updateData.issuedBy = issuedBy;
+    if (issueDate !== undefined) updateData.issueDate = issueDate;
+    if (expiryDate !== undefined) updateData.expiryDate = expiryDate;
+    updateData.verificationStatus = "ReUpload";
+
+    const response = await documentSchema.findByIdAndUpdate(
+      sId,
+      { $set: updateData },
+      { runValidators: true, new: true }
+    );
+
+    if (!response) {
+      return sendNotFoundResponse(res, "Document not found");
+    }
+
+    return sendResponse(res, true, "Document updated successfully", response);
+
+  } catch (error) {
+    return sendErrorResponse(res, "Something went wrong");
   }
 });
 

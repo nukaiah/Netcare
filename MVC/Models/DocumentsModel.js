@@ -12,10 +12,6 @@ const documentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    documentName: {
-        type: String,
-        required: true
-    },
     issuedBy: {
         type: String,
         required: true
@@ -30,7 +26,7 @@ const documentSchema = new mongoose.Schema({
     },
     verificationStatus: {
         type: String,
-        enum: ["Pending", "Verified", "Rejected"],
+        enum: ["Pending", "Verified", "Rejected","ReUpload"],
         default: "Pending"
     },
     verifiedBy: {
@@ -48,6 +44,6 @@ const documentSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-documentSchema.index({hospitalId:1,documentTypeId:1,documentName:1},{unique:true});
+documentSchema.index({hospitalId:1,documentTypeId:1},{unique:true});
 
 export default mongoose.model("Documents", documentSchema);

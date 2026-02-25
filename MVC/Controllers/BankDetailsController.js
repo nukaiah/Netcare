@@ -9,7 +9,7 @@ bankRouter.post('/insertUpdate', checkAuth, async (req, res, next) => {
         const {sId,...bankData} = req.body||{};
         let response;
         if (!sId) {
-            response = await bankSchema.insertOne(bankData);
+            response = await bankSchema.create(bankData);
             return sendResponse(res, true, "Bank details added successfully", response);
         }
         else {

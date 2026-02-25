@@ -7,16 +7,16 @@ const addressRouter = express.Router();
 
 
 
-addressRouter.post("/insertUpdate",checkAuth, async (req, res, next) => {
+addressRouter.post("/insertUpdate", checkAuth, async (req, res, next) => {
     try {
-        const {sId,...addressData} = req.body;
+        const { sId, ...addressData } = req.body;
         let response;
         if (!sId) {
             response = await addressSchema.insertOne(addressData);
             return sendResponse(res, true, "Address added successfully", response);
         }
         else {
-            response = await addressSchema.findByIdAndUpdate(sId, { $set: addressData}, { new: true, runValidators: true });
+            response = await addressSchema.findByIdAndUpdate(sId, { $set: addressData }, { new: true, runValidators: true });
             return sendResponse(res, true, "Address updated successfully", response);
 
         }
@@ -35,7 +35,7 @@ addressRouter.post("/insertUpdate",checkAuth, async (req, res, next) => {
 
 });
 
-addressRouter.get("/getAll",checkAuth,async(req,res,next)=>{
+addressRouter.get("/getAll", checkAuth, async (req, res, next) => {
     try {
         const response = await addressSchema.find();
         return sendResponse(res, true, "Address added successfully", response);
@@ -44,8 +44,11 @@ addressRouter.get("/getAll",checkAuth,async(req,res,next)=>{
     }
 });
 
-addressRouter.post('/fcm',async(req,res,next)=>{
-    await sendNotification(res,"camlYxWA1GQjDl_14HoxPx:APA91bG1ZoxBiy9kb-MWKLLpJWUzvkZpJQBrdXah2jfua0ju-yI_jJFFdwjvuFx6j1dEfXFYNTMWS-hJK27fc3cQjZb2zGDVlfVf0XprZDw9Q7Q6TbkbS58","Message From Admin","Hi,Ak How are you man?");
+addressRouter.post('/fcm', async (req, res, next) => {
+    const token = req.body.token;
+    const response = await sendNotification(res, token, "Message From", "Hi,Ak How are you man?");
+    console.log(response);
+    return sendResponse(res, true, "sent", response);
 });
 
 

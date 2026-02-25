@@ -326,10 +326,10 @@ healthcareworkerRouter.post('/getById', checkAuth, async (req, res, next) => {
                 $lookup: {
                     from: "addresses",
                     as: "addressData",
-                    let: {query:"$_id"},
-                    pipeline:[
+                    let: { query: "$_id" },
+                    pipeline: [
                         {
-                            $match:{$expr:{$eq:["$userId","$$query"]}}
+                            $match: { $expr: { $eq: ["$userId", "$$query"] } }
                         },
                         {
                             $lookup: {

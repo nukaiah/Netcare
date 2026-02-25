@@ -2,26 +2,36 @@ import admin from "../config/firebase.js";
 import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
 import { sendErrorResponse } from "./Response.js";
 
-const sendNotification = async (res,deviceToken, title, body, data = {}) => {
+const sendNotification = async (res, deviceToken, title, body, data = {}) => {
   if (!deviceToken) throw new Error("deviceToken is required");
   if (!title) throw new Error("title is required");
   if (!body) throw new Error("body is required");
 
   try {
-    await admin.messaging().send({
+    const message = {
       token: deviceToken,
-      notification: { title, body },
-      data
-    });
+      data: {
+        title: title,
+        body: body,
+        url: "/dashboard"
+      },
+      webpush: {
+        headers: {
+          Urgency: "high"
+        }
+      }
+    };
 
+    const response = await admin.messaging().send(message);
+    return response;
     console.log("Single notification sent successfully");
   } catch (error) {
-    return sendErrorResponse(res,error.message);
+    return sendErrorResponse(res, error.message);
     console.error("Error sending notification:", error.message);
   }
 };
 
-const sendBulkNotification = async (res,deviceTokens, title, body, data = {}) => {
+const sendBulkNotification = async (res, deviceTokens, title, body, data = {}) => {
 
   if (!title) throw new Error("title is required");
   if (!body) throw new Error("body is required");
@@ -51,7 +61,7 @@ const sendBulkNotification = async (res,deviceTokens, title, body, data = {}) =>
       });
 
     } catch (error) {
-      return sendErrorResponse(res,error.message);
+      return sendErrorResponse(res, error.message);
       // console.error("Batch error:", error.message);
     }
   }

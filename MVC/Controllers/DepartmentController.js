@@ -35,4 +35,6 @@ departmentRouter.get("/getAll", async (req, res, next) => {
     }
 });
 
+
+
 export default departmentRouter;
