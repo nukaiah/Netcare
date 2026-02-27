@@ -7,6 +7,7 @@ import ShiftApplication from '../Models/ShiftApplication.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { sendBulkNotification } from '../MiddleWares/fcm.js';
 import preferenceSchema from '../Models/PreferenceModel.js'
+import { sendEmail } from '../MiddleWares/Email.js';
 
 
 ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
@@ -42,7 +43,7 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
                     .flatMap(e => e.fcm)
             )
         ]
-        await sendBulkNotification(res,tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.location} matches your preferences.`);
+        await sendBulkNotification(res, tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.location} matches your preferences.`);
         return sendResponse(res, true, "Shift created successfully", response);
 
     } catch (error) {
@@ -56,67 +57,6 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
             const value = error.keyValue[field];
             return sendDuplicateResponse(res, `${field} "${value}" already exists`, error.keyValue);
         }
-        return sendErrorResponse(res, error.message);
-    }
-});
-
-
-ShiftRouter.post('/getAll', checkAuth, async (req, res, next) => {
-    try {
-        const query = { hospitalId: new mongoose.Types.ObjectId(req.body.id) };
-        const response = await ShiftSchema.aggregate([
-            {
-                $match: query
-            },
-            { $sort: { createdAt: -1 } },
-            {
-                $lookup: {
-                    from: "shiftapplications",
-                    as: "applications",
-                    let: { query: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $eq: ["$shiftId", "$$query"]
-                                }
-                            }
-                        },
-                        {
-                            $project: {
-                                workerId: 1,
-                                status: 1
-                            }
-                        },
-                        {
-                            $lookup: {
-                                from: "healthcareworkers",
-                                as: "worker",
-                                let: { query: "$workerId" },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $eq: ["$_id", "$$query"]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        $project: {
-                                            fullName: 1,
-                                            imageUrl: 1
-                                        }
-                                    }
-                                ]
-                            }
-
-                        }
-                    ]
-                }
-            }
-        ]);
-        return sendResponse(res, true, "Shift found Successfully", response);
-    } catch (error) {
         return sendErrorResponse(res, error.message);
     }
 });
@@ -271,4 +211,184 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
 });
 
 
+ShiftRouter.post('/getAllWeb', checkAuth, async (req, res) => {
+    try {
+        const page = Number(req.body.page) || 1;
+        const limit = Math.min(Number(req.body.limit) || 10, 100);
+        const skip = (page - 1) * limit;
+
+
+        if (!mongoose.Types.ObjectId.isValid(req.body.id)) {
+            return sendErrorResponse(res, "Invalid hospital id");
+        }
+        const hospitalId = new mongoose.Types.ObjectId(req.body.id);
+        const response = await ShiftSchema.aggregate([
+            { $match: { hospitalId } },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: "shiftapplications",
+                    as: "applicants",
+                    let: { query: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$shiftId","$$query"] } } },
+                        {
+                            $lookup:{
+                                from: "healthcareworkers",
+                                as: "users",
+                                let: { query1: "$workerId" },
+                                pipeline:[
+                                    {$match:{$expr:{$eq:["$_id","$$query1"]}}}
+                                ]
+                            }
+                        }
+
+                    ]
+                }
+            }
+        ]);
+
+        // const response = await ShiftSchema.aggregate([
+        //     { $match: { hospitalId } },
+
+        //     {
+        //         $facet: {
+        //             data: [
+        //                 { $sort: { createdAt: -1 } },
+        //                 { $skip: skip },
+        //                 { $limit: limit }
+        //             ],
+        //             totalCount: [
+        //                 { $count: "count" }
+        //             ]
+        //         }
+        //     },
+
+        //     // Extract total
+        //     {
+        //         $addFields: {
+        //             total: {
+        //                 $ifNull: [
+        //                     { $arrayElemAt: ["$totalCount.count", 0] },
+        //                     0
+        //                 ]
+        //             }
+        //         }
+        //     },
+
+        //     // Break data array into documents
+        //     { $unwind: "$data" },
+
+        //     // Replace root with shift document
+        //     {
+        //         $replaceRoot: {
+        //             newRoot: {
+        //                 $mergeObjects: ["$data", { total: "$total" }]
+        //             }
+        //         }
+        //     },
+
+        //     // ✅ Now lookup is allowed
+        //     {
+        //         $lookup: {
+        //             from: "shiftapplications",
+        //             localField: "_id",
+        //             foreignField: "shiftId",
+        //             as: "applications"
+        //         }
+        //     },
+
+        //     {
+        //         $addFields: {
+        //             applicantsCount: { $size: "$applications" }
+        //         }
+        //     },
+
+        //     // Regroup shifts back into array
+        //     {
+        //         $group: {
+        //             _id: "$total",
+        //             data: { $push: "$$ROOT" }
+        //         }
+        //     },
+
+        //     {
+        //         $project: {
+        //             _id: 0,
+        //             total: "$_id",
+        //             data: 1
+        //         }
+        //     }
+        // ]);
+
+
+
+        return sendResponse(res, true, "Shift found Successfully", response);
+
+    } catch (error) {
+        return sendErrorResponse(res, error.message);
+    }
+});
+
+
+
 export default ShiftRouter;
+
+
+// $lookup: {
+//     from: "shiftapplications",
+//     as: "applications",
+//     let: { query: "$_id" },
+//     pipeline: [
+//         {
+//             $match: {
+//                 $expr: {
+//                     $eq: ["$shiftId", "$$query"]
+//                 }
+//             }
+//         },
+//         {
+//             $project: {
+//                 workerId: 1,
+//                 status: 1
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "healthcareworkers",
+//                 as: "worker",
+//                 let: { query: "$workerId" },
+// pipeline: [
+//     {
+//         $match: {
+//             $expr: {
+//                 $eq: ["$_id", "$$query"]
+//             }
+//         }
+//     },
+//     {
+//         $project: {
+//             fullName: 1,
+//             imageUrl: 1
+//         }
+//     }
+// ]
+//             }
+
+//         }
+//     ]
+// }
+
+
+
+
+
+
+
+// {
+//     $project: {
+//         applications: 0
+//     }
+// }

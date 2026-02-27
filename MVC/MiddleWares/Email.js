@@ -27,7 +27,7 @@ async function sendEmail(toMail, subject, html) {
       html: html,
     };
     let info = await transporter.sendMail(mailOptions);
-    console.log("Message sent: %s", info.messageId);
+    // console.log("Message sent: %s", info.messageId);
     return info;
   } catch (error) {
     return error;

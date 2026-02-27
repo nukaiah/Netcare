@@ -4,7 +4,6 @@ import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { sendValidationResponse, sendErrorResponse, sendResponse, sendNotFoundResponse } from '../MiddleWares/Response.js';
 import { deleteFile } from '../MiddleWares/UploadFile.js';
 import upload from '../MiddleWares/UploadFile.js';
-import mongoose from 'mongoose';
 const experienceRouter = express.Router();
 
 experienceRouter.post('/insert', checkAuth, upload.single('file'), async (req, res, next) => {
@@ -19,6 +18,9 @@ experienceRouter.post('/insert', checkAuth, upload.single('file'), async (req, r
         const response = await experienceSchema.insertOne(docData);
         return sendResponse(res, true, "Experiance added successfully", response);
     } catch (error) {
+        if (req.file) {
+            deleteFile(`uploads/${req.file.filename}`);
+        }
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
@@ -30,7 +32,7 @@ experienceRouter.post('/insert', checkAuth, upload.single('file'), async (req, r
 
 experienceRouter.post('/update', checkAuth, async (req, res, next) => {
     try {
-        const {sId,data} = req.body || {};
+        const { sId, data } = req.body || {};
         if (!sId) {
             return sendErrorResponse(res, "Experience ID is required");
         }
@@ -85,39 +87,42 @@ experienceRouter.post('/insertNoFile', checkAuth, async (req, res, next) => {
 
 
 
-experienceRouter.post('/updateFile', checkAuth, upload.single("file"), async (req, res, next) => {
+experienceRouter.post("/updateFile", checkAuth, upload.single("file"), async (req, res) => {
     try {
-
-        const sId = req.body;
-
-
-        if (!sId) {
-            return sendErrorResponse(res, "Experience ID is required");
-        }
+        const { sId } = req.body || {};
 
         if (!req.file) {
             return sendErrorResponse(res, "No file uploaded");
         }
 
-        const existingExperience = await experienceSchema.findById(sId);
 
+        if (!sId) {
+            deleteFile(`uploads/${req.file.filename}`);
+            return sendErrorResponse(res, "Experience ID is required");
+        }
 
-        if (!existingExperience) {
+        const oldDocument = await experienceSchema.findByIdAndUpdate(sId, { $set: { documentUrl: req.file.filename } }, { new: false, runValidators: true });
+
+        if (!oldDocument) {
+            deleteFile(`uploads/${req.file.filename}`);
             return sendErrorResponse(res, "Experience not found");
         }
 
-        if (existingExperience.documentUrl) {
-            deleteFile(`uploads/${existingExperience.documentUrl}`);
+        if (oldDocument.documentUrl) {
+            deleteFile(`uploads/${oldDocument.documentUrl}`);
         }
 
-        const response = await experienceSchema.findByIdAndUpdate(sId, { $set: { documentUrl: req.file.filename } }, { new: true, runValidators: true });
-        return sendResponse(res, true, "Experiance updated successfully", response);
+        return sendResponse(res, true, "Experience file updated successfully");
+
     } catch (error) {
+        if (req.file) {
+            deleteFile(`uploads/${req.file.filename}`);
+        }
 
         return sendErrorResponse(res, error.message);
     }
-});
-
+}
+);
 
 experienceRouter.post('/deleteFile', checkAuth, async (req, res, next) => {
     try {

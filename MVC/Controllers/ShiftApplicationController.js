@@ -5,7 +5,7 @@ import { checkAuth } from '../MiddleWares/CheckAuth.js';
 const shiftApplicationRouter = express.Router();
 import mongoose from 'mongoose';
 
-shiftApplicationRouter.post('/showInterest', checkAuth, async (req, res, next) => {
+shiftApplicationRouter.post('/showInterest', async (req, res, next) => {
     try {
         const applicationData = req.body;
         const response = await shiftApplicationSchema.insertOne(applicationData);

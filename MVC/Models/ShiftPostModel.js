@@ -5,19 +5,42 @@ const ShiftSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    title: {
-        type: String,
-        required: true,
-        trim: true
+    hospitalName:{
+        type:String,
+        required:true,
+        trim:true
     },
+
     departmentId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    departmentName: {
-        type: String,
+    departmentName:{
+        type:String,
+        required:true,
+        trim:true
+    },
+
+    designationId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
+    designationName:{
+        type:String,
+        required:true,
+        trim:true
+    },
+
+    locationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+    locationName:{
+        type:String,
+        required:true,
+        trim:true
+    },
+
     shiftDate: {
         type: Date,
         required: true
@@ -39,14 +62,6 @@ const ShiftSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    locationId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    location: {
-        type: String,
-        required: true
-    },
     duties: {
         type: String,
         default:null
@@ -57,7 +72,19 @@ const ShiftSchema = new mongoose.Schema({
         default: "Open"
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    versionKey:false
 });
+
+
+ShiftSchema.index({status: 1,shiftDate: 1,departmentId: 1,designationId: 1,locationId: 1});
+ShiftSchema.index({hospitalId: 1,createdAt: -1});
+ShiftSchema.index({shiftDate: 1});
+ShiftSchema.index({ createdAt: -1 });
+
+ShiftSchema.index({ departmentId: 1 });
+ShiftSchema.index({ designationId: 1 });
+ShiftSchema.index({ locationId: 1 });
+
 
 export default mongoose.model("Shifts",ShiftSchema);

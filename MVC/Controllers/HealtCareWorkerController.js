@@ -5,10 +5,12 @@ import { decrypt } from '../MiddleWares/EncryptDecrypt.js';
 import { sendResponse, sendErrorResponse, sendLoginResponse, sendValidationResponse, sendNotFoundResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import upload from '../MiddleWares/UploadFile.js';
+import upload, { deleteFile } from '../MiddleWares/UploadFile.js';
 dotenv.config();
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { comparePassword, hashPassword } from '../MiddleWares/PasswordHash.js';
+import { sendEmail } from '../MiddleWares/Email.js';
+import { verificationStatusTemplate, onboardingTemplate } from "../MiddleWares/EmailotpTemplate.js";
 const healthcareworkerRouter = express.Router();
 
 
@@ -25,6 +27,8 @@ healthcareworkerRouter.post('/signUp', async (req, res, next) => {
 
         }
         const result = await healthCareWorkerSchema.create(req.body);
+        const template = onboardingTemplate(req.body.fullName, req.body.email, req.body.password, req.body.roleId);
+        const emailResponse = await sendEmail(req.body.email, template.subject, template.html);
         return sendResponse(res, true, `Hey ${req.body.fullName} your account created successfully.Thank you.`, result);
     } catch (error) {
         if (error.code === 11000) {
@@ -60,6 +64,7 @@ healthcareworkerRouter.post('/login', async (req, res, next) => {
         }
         const workerResponse = response.toObject();
         delete workerResponse.password;
+        delete workerResponse.fcm;
 
         const jwttoken = jwt.sign({
             _id: workerResponse._id,
@@ -72,6 +77,7 @@ healthcareworkerRouter.post('/login', async (req, res, next) => {
         );
         return sendLoginResponse(res, workerResponse, jwttoken);
     } catch (error) {
+        console.log(error.message);
         return sendErrorResponse(res, error.message);
     }
 });
@@ -131,26 +137,46 @@ healthcareworkerRouter.post('/updateDetails', checkAuth, async (req, res, next) 
 });
 
 
-healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), async (req, res, next) => {
+healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), async (req, res) => {
     try {
         if (!req.file) {
-            return sendValidationResponse(res, [{ field: 'imageUrl', message: 'File is required and must be an image' }]);
+            return sendValidationResponse(res, [
+                { field: 'imageUrl', message: 'File is required and must be an image' }
+            ]);
         }
 
-        const data = { imageUrl: req.file.filename };
-
-        const result = await healthCareWorkerSchema.findByIdAndUpdate(
+        const response = await healthCareWorkerSchema.findByIdAndUpdate(
             req.userId,
-            { $set: data },
-            { new: true, runValidators: true }
+            { $set: { imageUrl: req.file.filename } },
+            { new: false } // returns OLD document
         );
 
-        return sendResponse(res, true, "Profile image updated", result);
+        // Delete old image safely
+        if (response?.imageUrl) {
+            try {
+                deleteFile(`uploads/${response.imageUrl}`);
+            } catch (err) {
+                console.log("Old file delete failed:", err.message);
+            }
+        }
+
+        return sendResponse(res, true, "Profile image updated", {
+            imageUrl: req.file.filename
+        });
+
     } catch (error) {
+
+        // Delete newly uploaded file if update fails
+        if (req.file) {
+            try {
+                deleteFile(`uploads/${req.file.filename}`);
+            } catch (err) { }
+        }
 
         return sendErrorResponse(res, error.message, {});
     }
-});
+}
+);
 
 healthcareworkerRouter.post('/updateVerificationStatus', checkAuth, async (req, res, next) => {
     try {
@@ -164,6 +190,8 @@ healthcareworkerRouter.post('/updateVerificationStatus', checkAuth, async (req, 
         }
 
         const response = await healthCareWorkerSchema.findByIdAndUpdate(userId, { $set: { verificationStatus } }, { runValidators: true, new: true });
+        const template = verificationStatusTemplate(verificationStatus, response.fullName);
+        const emailResponse = await sendEmail(response.email, template.subject, template.html);
 
         if (!response) {
             return sendErrorResponse(res, "Data not found");
@@ -414,7 +442,6 @@ healthcareworkerRouter.post('/getById', checkAuth, async (req, res, next) => {
         return sendErrorResponse(res, error.message);
     }
 });
-
 
 
 

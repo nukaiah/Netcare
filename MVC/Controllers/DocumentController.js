@@ -5,6 +5,8 @@ import upload from '../MiddleWares/UploadFile.js';
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import mongoose from 'mongoose';
 import { deleteFile } from '../MiddleWares/UploadFile.js';
+import { sendEmail } from '../MiddleWares/Email.js';
+import { documentRejectedTemplate } from "../MiddleWares/EmailotpTemplate.js";
 
 const documentRouter = express.Router();
 
@@ -74,9 +76,13 @@ documentRouter.post("/getAll", async (req, res, next) => {
 
 documentRouter.post("/verify", checkAuth, async (req, res, next) => {
   try {
-    const query = { _id: req.body.id };
-    const updateData = { "verificationStatus": req.body.verificationStatus, "verifiedBy": req.userId, "verifiedAt": new Date(), "rejectionReason": req.body.rejectionReason }
-    const response = await documentSchema.findByIdAndUpdate(query, { $set: updateData }, { upsert: true });
+    const {id,verificationStatus,rejectionReason,email,documentName,facilityName} = req.body || {};
+    const updateData = { "verificationStatus": verificationStatus, "verifiedBy": req.userId, "verifiedAt": new Date(), "rejectionReason": rejectionReason }
+    const response = await documentSchema.findByIdAndUpdate({_id:id}, { $set: updateData }, { upsert: true });
+    if(verificationStatus==="Rejected"){
+      const template = documentRejectedTemplate( facilityName,documentName,rejectionReason );
+      await sendEmail(email,template.subject,template.html);
+    }
     return sendResponse(res, true, "Status got changed", response);
   } catch (error) {
     return sendErrorResponse(res, error.message);
@@ -84,7 +90,7 @@ documentRouter.post("/verify", checkAuth, async (req, res, next) => {
 });
 
 
-documentRouter.post('/delete', async (req, res) => {
+documentRouter.post('/deleteFile', async (req, res) => {
   try {
     const { sId } = req.body || {};
 
@@ -134,7 +140,7 @@ documentRouter.post("/updateFile", upload.single("file"), async (req, res) => {
     }
     const oldDocument = await documentSchema.findByIdAndUpdate(
       sId,
-      { $set: { documentUrl: req.file.filename,verificationStatus:"ReUpload" } },
+      { $set: { documentUrl: req.file.filename, verificationStatus: "ReUpload" } },
       { new: false }
     );
 

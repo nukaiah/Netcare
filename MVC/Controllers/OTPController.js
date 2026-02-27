@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { sendDuplicateResponse, sendErrorResponse, sendResponse, sendValidationResponse } from '../MiddleWares/Response.js';
 import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
 import { sendEmail } from '../MiddleWares/Email.js';
-import otpTemplate from "../MiddleWares/EmailotpTemplate.js";
+import {otpTemplate} from "../MiddleWares/EmailotpTemplate.js";
 
 
 otpRouter.post('/generateOtp', async (req, res, next) => {
@@ -67,6 +67,7 @@ otpRouter.post('/generateOtp', async (req, res, next) => {
         // Email OTP 
         const template = otpTemplate(emailOtp, cleanEmail);
         const emailResponse = await sendEmail(cleanEmail, template.subject, template.html);
+        console.log(emailResponse);
 
         // Mobile OTP
         // await sendSms(cleanMobile, mobileOtp);
@@ -105,7 +106,7 @@ otpRouter.post('/resendOtp', async (req, res, next) => {
         if (mode === "Mobile") {
             // sending is in pogress
         }
-        return sendResponse(res, `Otp sent to your ${mode} sucessfully`);
+        return sendResponse(res,true, `Otp sent to your ${mode} sucessfully`);
     } catch (error) {
         return sendErrorResponse(res, error.message);
     }
@@ -125,7 +126,7 @@ otpRouter.post("/verifyOtp", async (req, res, next) => {
 
         const otpDoc = await otpSchema.findOne({ "mode": mode, "otp": otp, "emailMobile": emailMobile });
 
-        if (!otpDoc) return sendErrorResponse(res, "Invalid OTP or already used");
+        if (!otpDoc) return sendErrorResponse(res, "Invalid OTP");
 
         if (otpDoc.isUsed) return sendErrorResponse(res, "OTP already used")
 

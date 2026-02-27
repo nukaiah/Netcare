@@ -19,6 +19,9 @@ qualificationRouter.post('/insert', checkAuth, upload.single('file'), async (req
         const response = await qualificationSchema.insertOne(docData);
         return sendResponse(res, true, "Qualification added successfully", response);
     } catch (error) {
+        if(req.file){
+            deleteFile(`uploads/${req.file.filename}`);
+        }
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
@@ -66,28 +69,31 @@ qualificationRouter.post('/updateFile', checkAuth, upload.single("file"), async 
 
         const { sId } = req.body || {};
 
-        if (!sId) {
-            return sendErrorResponse(res, "Qualification id is required");
-        }
-
         if (!req.file) {
             return sendErrorResponse(res, "No file uploaded");
         }
 
-        const existingQualification = await qualificationSchema.findById(sId);
-
-        if (!existingQualification) {
-            return sendErrorResponse(res, "Experience not found");
+        if (!sId) {
+            deleteFile(`uploads/${req.file.filename}`);
+            return sendErrorResponse(res, "Qualification id is required");
         }
 
-        if (existingQualification.documentUrl) {
-            deleteFile(`uploads/${existingQualification.documentUrl}`);
+    
+        const oldDocument = await qualificationSchema.findByIdAndUpdate(sId, { $set: { documentUrl: req.file.filename } }, { new: false});
+
+        if (!oldDocument) {
+            deleteFile(`uploads/${req.file.filename}`);
+            return sendErrorResponse(res, "Qualification not found");
         }
 
-        const response = await qualificationSchema.findByIdAndUpdate(sId, { $set: { documentUrl: req.file.filename } }, { new: true, runValidators: true });
-        return sendResponse(res, true, "Qualification updated successfully", response);
+        if (oldDocument.documentUrl) {
+            deleteFile(`uploads/${oldDocument.documentUrl}`);
+        }
+        return sendResponse(res, true, "Qualification updated successfully");
     } catch (error) {
-
+        if(req.file){
+            deleteFile(`uploads/${req.file.filename}`);
+        }
         return sendErrorResponse(res, error.message);
     }
 });
