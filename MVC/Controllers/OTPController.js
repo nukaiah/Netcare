@@ -61,7 +61,7 @@ otpRouter.post('/generateOtp', async (req, res, next) => {
             emailMobile: cleanMobile,
             otp: "123456",
             expireDate: new Date(Date.now() + 10 * 60 * 1000),
-        }]
+        }];
 
         const response = await otpSchema.insertMany(data);
         // Email OTP 

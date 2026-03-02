@@ -10,7 +10,9 @@ dotenv.config();
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { comparePassword, hashPassword } from '../MiddleWares/PasswordHash.js';
 import { sendEmail } from '../MiddleWares/Email.js';
-import { verificationStatusTemplate, onboardingTemplate } from "../MiddleWares/EmailotpTemplate.js";
+import crypto from 'crypto';
+import otpSchema from '../Models/OTPModel.js';
+import { verificationStatusTemplate, onboardingTemplate, forgotPasswordOtpTemplate } from "../MiddleWares/EmailotpTemplate.js";
 const healthcareworkerRouter = express.Router();
 
 
@@ -26,10 +28,13 @@ healthcareworkerRouter.post('/signUp', async (req, res, next) => {
             return sendValidationResponse(res, [{ field: 'mobileNumber', message: `${mobileNumber} is not a valid email!` }]);
 
         }
-        const result = await healthCareWorkerSchema.create(req.body);
+        const response = await healthCareWorkerSchema.create(req.body);
+        const workerResponse = response.toObject();
+        delete workerResponse.password;
+
         const template = onboardingTemplate(req.body.fullName, req.body.email, req.body.password, req.body.roleId);
         const emailResponse = await sendEmail(req.body.email, template.subject, template.html);
-        return sendResponse(res, true, `Hey ${req.body.fullName} your account created successfully.Thank you.`, result);
+        return sendResponse(res, true, `Hey ${req.body.fullName} your account created successfully.Thank you.`, workerResponse);
     } catch (error) {
         if (error.code === 11000) {
             return sendDuplicateResponse(res, `${Object.keys(error.keyValue)[0]} is alreay existed`);
@@ -77,7 +82,6 @@ healthcareworkerRouter.post('/login', async (req, res, next) => {
         );
         return sendLoginResponse(res, workerResponse, jwttoken);
     } catch (error) {
-        console.log(error.message);
         return sendErrorResponse(res, error.message);
     }
 });
@@ -148,16 +152,13 @@ healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), 
         const response = await healthCareWorkerSchema.findByIdAndUpdate(
             req.userId,
             { $set: { imageUrl: req.file.filename } },
-            { new: false } // returns OLD document
+            { new: false }
         );
-
-        // Delete old image safely
+        if (!response) {
+            deleteFile(`uploads/${req.file.filename}`);
+        }
         if (response?.imageUrl) {
-            try {
-                deleteFile(`uploads/${response.imageUrl}`);
-            } catch (err) {
-                console.log("Old file delete failed:", err.message);
-            }
+            deleteFile(`uploads/${response.imageUrl}`);
         }
 
         return sendResponse(res, true, "Profile image updated", {
@@ -165,18 +166,12 @@ healthcareworkerRouter.post('/updateProfile', checkAuth, upload.single("file"), 
         });
 
     } catch (error) {
-
-        // Delete newly uploaded file if update fails
-        if (req.file) {
-            try {
-                deleteFile(`uploads/${req.file.filename}`);
-            } catch (err) { }
-        }
-
+        deleteFile(`uploads/${req.file.filename}`);
         return sendErrorResponse(res, error.message, {});
     }
 }
 );
+
 
 healthcareworkerRouter.post('/updateVerificationStatus', checkAuth, async (req, res, next) => {
     try {
@@ -443,6 +438,63 @@ healthcareworkerRouter.post('/getById', checkAuth, async (req, res, next) => {
     }
 });
 
+
+healthcareworkerRouter.post("/ForgotPassword", async (req, res) => {
+    try {
+        const { email } = req.body || {};
+
+        if (!email) {
+            return sendValidationResponse(res, [
+                { field: "email", message: "Email is required" }
+            ]);
+        }
+
+        const user = await healthCareWorkerSchema.findOne({ email });
+
+        if (!user) {
+            return sendNotFoundResponse(res, "No user found on this email");
+        }
+        await otpSchema.deleteMany({ emailMobile: user.email, type: "ForgotPassword", isUsed: false });
+        const emailOtp = crypto.randomInt(100000, 1000000);
+        const data = {
+            type: "ForgotPassword",
+            mode: "Email",
+            emailMobile: user.email,
+            otp: emailOtp.toString(),
+            expireDate: new Date(Date.now() + 10 * 60 * 1000),
+        };
+        const response = await otpSchema.create(data);
+        const template = forgotPasswordOtpTemplate(emailOtp, user.fullName);
+        const emailResponse = await sendEmail(user.email, template.subject, template.html);
+        return sendResponse(res, true, "Password reset link sent to your email");
+
+    } catch (error) {
+        return sendErrorResponse(res, error.message, {});
+    }
+});
+
+healthcareworkerRouter.post('/Updatepassword', async (req, res, next) => {
+    try {
+        const { email, password } = req.body || {};
+        if (!email) {
+            return sendValidationResponse(res, [
+                { field: "email", message: "Email is required" }
+            ]);
+        }
+        if (!password) {
+            return sendValidationResponse(res, [
+                { field: "password", message: "Password is required" }
+            ]);
+        }
+
+        const response = await healthCareWorkerSchema.findOneAndUpdate({email}, { $set: { password: password } }, { new: true, runValidators: true });
+        return sendResponse(res, true, "Password Changed Successfully");
+    } catch (error) {
+        return sendErrorResponse(res, error.message);
+
+    }
+
+});
 
 
 export default healthcareworkerRouter;

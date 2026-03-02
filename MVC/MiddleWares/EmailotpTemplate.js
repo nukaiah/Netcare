@@ -111,19 +111,17 @@ const verificationStatusTemplate = (status, facilityName = "Facility Admin") => 
               <tr>
                 <td style="padding:20px;">
                   <p style="margin:0; font-size:14px; color:#555555; line-height:1.6;">
-                    ${
-                      isVerified
-                        ? "Your account is now fully verified. You may access all platform features and begin managing your facility dashboard."
-                        : "Unfortunately, your verification request was not approved at this time. Please contact our support team for further clarification."
-                    }
+                    ${isVerified
+        ? "Your account is now fully verified. You may access all platform features and begin managing your facility dashboard."
+        : "Unfortunately, your verification request was not approved at this time. Please contact our support team for further clarification."
+      }
                   </p>
                 </td>
               </tr>
             </table>
 
-            ${
-              isVerified
-                ? `
+            ${isVerified
+        ? `
                 <!-- CTA Button -->
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:30px;">
                   <tr>
@@ -138,8 +136,8 @@ const verificationStatusTemplate = (status, facilityName = "Facility Admin") => 
                   </tr>
                 </table>
                 `
-                : ""
-            }
+        : ""
+      }
 
             <p style="font-size:14px; color:#555555; line-height:1.6;">
               If you have any questions or require assistance, please reach out to our support team.
@@ -221,9 +219,8 @@ const onboardingTemplate = (
                 We are pleased to inform you that your account has been successfully onboarded to the ShiftMatch platform.
               </p>
 
-              ${
-                roleId===1
-                ? `
+              ${roleId === 1
+        ? `
                 <!-- Credentials Box -->
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin:25px 0; background:#f7f9fc; border:1px solid #e3e8ee; border-radius:8px;">
                   <tr>
@@ -252,12 +249,12 @@ const onboardingTemplate = (
                   </tr>
                 </table>
                 `
-                : `
+        : `
                 <p style="font-size:15px; color:#555555; line-height:1.6; margin-top:20px;">
                   You can access your account using your registered email address and password.
                 </p>
                 `
-              }
+      }
 
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:30px;">
@@ -402,5 +399,63 @@ const documentRejectedTemplate = (
   };
 };
 
+const forgotPasswordOtpTemplate = (otp, userName = "User") => {
+  return {
+    subject: "Password Reset OTP",
+    html: `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+      <div style="max-width: 520px; margin: auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        
+        <h2 style="text-align: center; color: #2c3e50;">
+          Password Reset Verification
+        </h2>
 
-export { otpTemplate, verificationStatusTemplate, onboardingTemplate,documentRejectedTemplate };
+        <p style="font-size: 15px; color: #333;">
+          Hello ${userName},
+        </p>
+
+        <p style="font-size: 15px; color: #333;">
+          We received a request to reset your password. Please use the One-Time Password (OTP) below to continue:
+        </p>
+
+        <div style="text-align: center; margin: 25px 0;">
+          <span style="
+            display: inline-block;
+            padding: 15px 25px;
+            font-size: 30px;
+            font-weight: bold;
+            letter-spacing: 6px;
+            background-color: #eef3f7;
+            color: #2c3e50;
+            border-radius: 8px;
+          ">
+            ${otp}
+          </span>
+        </div>
+
+        <p style="font-size: 14px; color: #555;">
+          This OTP is valid for <strong>10 minutes</strong>.
+        </p>
+
+        <p style="font-size: 14px; color: #c0392b;">
+          Do not share this OTP with anyone for security reasons.
+        </p>
+
+        <hr style="margin: 25px 0;" />
+
+        <p style="font-size: 12px; color: #888;">
+          If you did not request a password reset, please ignore this email. Your account remains secure.
+        </p>
+
+        <p style="font-size: 14px; color: #333;">
+          Regards,<br/>
+          <strong>ShiftMatch Support Team</strong>
+        </p>
+
+      </div>
+    </div>
+    `
+  };
+};
+
+export { otpTemplate, verificationStatusTemplate, onboardingTemplate, documentRejectedTemplate,forgotPasswordOtpTemplate };

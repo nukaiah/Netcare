@@ -11,6 +11,8 @@ shiftApplicationRouter.post('/showInterest', async (req, res, next) => {
         const response = await shiftApplicationSchema.insertOne(applicationData);
         return sendResponse(res, true, "Applied successful", response);
     } catch (error) {
+        console.log(error.name);
+        console.log(error.message);
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);

@@ -61,6 +61,93 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
     }
 });
 
+ShiftRouter.post('/getAllWeb', checkAuth, async (req, res) => {
+    try {
+        const page = Number(req.body.page) || 1;
+        const limit = Math.min(Number(req.body.limit) || 10, 100);
+        const skip = (page - 1) * limit;
+        if (!mongoose.Types.ObjectId.isValid(req.body.id)) {
+            return sendErrorResponse(res, "Invalid hospital id");
+        }
+        const hospitalId = new mongoose.Types.ObjectId(req.body.id);
+        const response = await ShiftSchema.aggregate([
+            { $match: { hospitalId } },
+
+            {
+                $facet: {
+                    data: [
+                        { $sort: { createdAt: -1 } },
+                        { $skip: skip },
+                        { $limit: limit },
+
+                        {
+                            $lookup: {
+                                from: "shiftapplications",
+                                let: { shiftId: "$_id" },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: { $eq: ["$shiftId", "$$shiftId"] }
+                                        }
+                                    },
+                                    { $limit: 3 },
+
+                                    {
+                                        $lookup: {
+                                            from: "healthcareworkers",
+                                            let: { workerId: "$workerId" },
+                                            pipeline: [
+                                                {
+                                                    $match: {
+                                                        $expr: { $eq: ["$_id", "$$workerId"] }
+                                                    }
+                                                },
+                                                {
+                                                    $project: {
+                                                        _id: 1,
+                                                        fullName: 1,
+                                                        imageUrl: 1
+                                                    }
+                                                }
+                                            ],
+                                            as: "user"
+                                        }
+                                    },
+                                    { $unwind: "$user" },
+                                    {
+                                        $replaceRoot: { newRoot: "$user" }
+                                    }
+                                ],
+                                as: "applicants"
+                            }
+                        }
+                    ],
+                    totalCount: [
+                        { $count: "count" }
+                    ]
+                }
+            },
+
+        ]);
+
+        const aggResult = response[0];
+        const shifts = aggResult.data || [];
+        const total = aggResult.totalCount[0]?.count || 0;
+
+        return sendResponse(res, true, "Shifts fetched", {
+            shifts,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        });
+
+
+
+    } catch (error) {
+        return sendErrorResponse(res, error.message);
+    }
+});
 
 ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
     try {
@@ -69,16 +156,10 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
         const skip = (page - 1) * limit;
         const workerObjectId = new mongoose.Types.ObjectId(req.userId);
         const response = await ShiftApplication.aggregate([
-            {
-                $match: { workerId: workerObjectId },
-            },
+            { $match: { workerId: workerObjectId } },
             { $sort: { createdAt: -1 } },
-            {
-                $skip: skip
-            },
-            {
-                $limit: limit
-            },
+            { $skip: skip },
+            { $limit: limit },
             {
                 $lookup: {
                     from: "shifts",
@@ -91,34 +172,6 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
                                     $eq: ["$_id", "$$query"]
                                 }
                             }
-                        },
-                        {
-                            $lookup: {
-                                from: "healthcareworkers",
-                                as: "hospitalData",
-                                let: { query: "$hospitalId" },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $eq: ["$_id", "$$query"]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        $project: {
-                                            fullName: 1,
-                                            verificationStatus: 1
-                                        }
-                                    }
-                                ]
-                            },
-                        },
-                        {
-                            $unwind: {
-                                path: "$hospitalData",
-                                preserveNullAndEmptyArrays: true
-                            }
                         }
                     ]
                 },
@@ -129,8 +182,6 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-
-
         ]);
         return sendResponse(res, true, "Shift found successfully", response);
     } catch (error) {
@@ -139,19 +190,25 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
 });
 
 
-ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
+ShiftRouter.post('/getAllMobile', async (req, res, next) => {
     try {
+        const { preferredLocation, designationId } = req.body || {};
+        const matchQuery = {};
+        if (preferredLocation) {
+            matchQuery.locationId = new mongoose.Types.ObjectId(preferredLocation);
+        }
+        if (designationId) {
+            matchQuery.designationId = new mongoose.Types.ObjectId(designationId);
+        }
+        
         const page = Number(req.body.page) || 1;
         const limit = Math.min(Number(req.body.limit) || 10, 100);
         const skip = (page - 1) * limit;
         const response = await ShiftSchema.aggregate([
+            { $match: matchQuery },
             { $sort: { createdAt: -1 } },
-            {
-                $skip: skip
-            },
-            {
-                $limit: limit
-            },
+            { $skip: skip },
+            { $limit: limit },
             {
                 $lookup: {
                     from: "healthcareworkers",
@@ -160,9 +217,7 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
                     pipeline: [
                         {
                             $match: {
-                                $expr: {
-                                    $eq: ["$_id", "$$queryId"]
-                                }
+                                $expr: { $eq: ["$_id", "$$queryId"] }
                             }
                         },
                         {
@@ -174,6 +229,7 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
                     ]
                 }
             },
+
             {
                 $lookup: {
                     from: "shiftapplications",
@@ -182,9 +238,7 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
                     pipeline: [
                         {
                             $match: {
-                                $expr: {
-                                    $eq: ["$shiftId", "$$queryId"]
-                                }
+                                $expr: { $eq: ["$shiftId", "$$queryId"] }
                             }
                         },
                         {
@@ -196,6 +250,7 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
                     ]
                 }
             },
+
             {
                 $unwind: {
                     path: "$hospitalData",
@@ -207,188 +262,11 @@ ShiftRouter.post('/getAllMobile', checkAuth, async (req, res, next) => {
     } catch (error) {
         return sendErrorResponse(res, error.message);
     }
-
 });
 
+// 
 
-ShiftRouter.post('/getAllWeb', checkAuth, async (req, res) => {
-    try {
-        const page = Number(req.body.page) || 1;
-        const limit = Math.min(Number(req.body.limit) || 10, 100);
-        const skip = (page - 1) * limit;
-
-
-        if (!mongoose.Types.ObjectId.isValid(req.body.id)) {
-            return sendErrorResponse(res, "Invalid hospital id");
-        }
-        const hospitalId = new mongoose.Types.ObjectId(req.body.id);
-        const response = await ShiftSchema.aggregate([
-            { $match: { hospitalId } },
-            { $sort: { createdAt: -1 } },
-            { $skip: skip },
-            { $limit: limit },
-            {
-                $lookup: {
-                    from: "shiftapplications",
-                    as: "applicants",
-                    let: { query: "$_id" },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ["$shiftId","$$query"] } } },
-                        {
-                            $lookup:{
-                                from: "healthcareworkers",
-                                as: "users",
-                                let: { query1: "$workerId" },
-                                pipeline:[
-                                    {$match:{$expr:{$eq:["$_id","$$query1"]}}}
-                                ]
-                            }
-                        }
-
-                    ]
-                }
-            }
-        ]);
-
-        // const response = await ShiftSchema.aggregate([
-        //     { $match: { hospitalId } },
-
-        //     {
-        //         $facet: {
-        //             data: [
-        //                 { $sort: { createdAt: -1 } },
-        //                 { $skip: skip },
-        //                 { $limit: limit }
-        //             ],
-        //             totalCount: [
-        //                 { $count: "count" }
-        //             ]
-        //         }
-        //     },
-
-        //     // Extract total
-        //     {
-        //         $addFields: {
-        //             total: {
-        //                 $ifNull: [
-        //                     { $arrayElemAt: ["$totalCount.count", 0] },
-        //                     0
-        //                 ]
-        //             }
-        //         }
-        //     },
-
-        //     // Break data array into documents
-        //     { $unwind: "$data" },
-
-        //     // Replace root with shift document
-        //     {
-        //         $replaceRoot: {
-        //             newRoot: {
-        //                 $mergeObjects: ["$data", { total: "$total" }]
-        //             }
-        //         }
-        //     },
-
-        //     // ✅ Now lookup is allowed
-        //     {
-        //         $lookup: {
-        //             from: "shiftapplications",
-        //             localField: "_id",
-        //             foreignField: "shiftId",
-        //             as: "applications"
-        //         }
-        //     },
-
-        //     {
-        //         $addFields: {
-        //             applicantsCount: { $size: "$applications" }
-        //         }
-        //     },
-
-        //     // Regroup shifts back into array
-        //     {
-        //         $group: {
-        //             _id: "$total",
-        //             data: { $push: "$$ROOT" }
-        //         }
-        //     },
-
-        //     {
-        //         $project: {
-        //             _id: 0,
-        //             total: "$_id",
-        //             data: 1
-        //         }
-        //     }
-        // ]);
-
-
-
-        return sendResponse(res, true, "Shift found Successfully", response);
-
-    } catch (error) {
-        return sendErrorResponse(res, error.message);
-    }
-});
 
 
 
 export default ShiftRouter;
-
-
-// $lookup: {
-//     from: "shiftapplications",
-//     as: "applications",
-//     let: { query: "$_id" },
-//     pipeline: [
-//         {
-//             $match: {
-//                 $expr: {
-//                     $eq: ["$shiftId", "$$query"]
-//                 }
-//             }
-//         },
-//         {
-//             $project: {
-//                 workerId: 1,
-//                 status: 1
-//             }
-//         },
-//         {
-//             $lookup: {
-//                 from: "healthcareworkers",
-//                 as: "worker",
-//                 let: { query: "$workerId" },
-// pipeline: [
-//     {
-//         $match: {
-//             $expr: {
-//                 $eq: ["$_id", "$$query"]
-//             }
-//         }
-//     },
-//     {
-//         $project: {
-//             fullName: 1,
-//             imageUrl: 1
-//         }
-//     }
-// ]
-//             }
-
-//         }
-//     ]
-// }
-
-
-
-
-
-
-
-// {
-//     $project: {
-//         applications: 0
-//     }
-// }

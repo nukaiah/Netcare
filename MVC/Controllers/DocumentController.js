@@ -76,12 +76,12 @@ documentRouter.post("/getAll", async (req, res, next) => {
 
 documentRouter.post("/verify", checkAuth, async (req, res, next) => {
   try {
-    const {id,verificationStatus,rejectionReason,email,documentName,facilityName} = req.body || {};
+    const { id, verificationStatus, rejectionReason, email, documentName, facilityName } = req.body || {};
     const updateData = { "verificationStatus": verificationStatus, "verifiedBy": req.userId, "verifiedAt": new Date(), "rejectionReason": rejectionReason }
-    const response = await documentSchema.findByIdAndUpdate({_id:id}, { $set: updateData }, { upsert: true });
-    if(verificationStatus==="Rejected"){
-      const template = documentRejectedTemplate( facilityName,documentName,rejectionReason );
-      await sendEmail(email,template.subject,template.html);
+    const response = await documentSchema.findByIdAndUpdate({ _id: id }, { $set: updateData }, { upsert: true });
+    if (verificationStatus === "Rejected") {
+      const template = documentRejectedTemplate(facilityName, documentName, rejectionReason);
+      await sendEmail(email, template.subject, template.html);
     }
     return sendResponse(res, true, "Status got changed", response);
   } catch (error) {
@@ -97,37 +97,32 @@ documentRouter.post('/deleteFile', async (req, res) => {
     if (!sId) {
       return sendValidationResponse(res, ["Document ID is required"]);
     }
-
-    const existedData = await documentSchema.findById(sId);
-
-    if (!existedData) {
-      return sendNotFoundResponse(res, "Document not found");
-    }
+    console.log(sId);
 
     const response = await documentSchema.findByIdAndUpdate(
       sId,
       { $set: { documentUrl: null } },
       { runValidators: true, new: true }
     );
+    if (!response) {
+      return sendNotFoundResponse(res, "Document not found");
+    }
 
-    if (response && existedData.documentUrl) {
-      try {
-        deleteFile(`uploads/${existedData.documentUrl}`);
-      } catch (error) {
-
-      }
+    if (response.documentUrl) {
+      deleteFile(`uploads/${existedData.documentUrl}`);
     }
 
     return sendResponse(res, true, "File deleted successfully", response);
 
   } catch (error) {
-    return sendErrorResponse(res, "Something went wrong");
+    return sendErrorResponse(res,error.message);
   }
 });
 
 
 documentRouter.post("/updateFile", upload.single("file"), async (req, res) => {
   try {
+
     const { sId } = req.body || {};
     if (!sId) {
       if (req.file) {
@@ -138,30 +133,27 @@ documentRouter.post("/updateFile", upload.single("file"), async (req, res) => {
     if (!req.file) {
       return sendValidationResponse(res, ["No file uploaded"]);
     }
+
     const oldDocument = await documentSchema.findByIdAndUpdate(
       sId,
       { $set: { documentUrl: req.file.filename, verificationStatus: "ReUploaded" } },
-      { new: false }
+      { new: false,runValidators:true }
     );
+    console.log(oldDocument);
+    
 
     if (!oldDocument) {
       deleteFile(`uploads/${req.file.filename}`);
       return sendNotFoundResponse(res, "Document not found");
     }
     if (oldDocument.documentUrl) {
-      try {
         deleteFile(`uploads/${oldDocument.documentUrl}`);
-      } catch (error) { }
     }
 
     return sendResponse(res, true, "Document updated successfully");
 
   } catch (error) {
-    if (req.file) {
-      try {
-        deleteFile(`uploads/${req.file.filename}`);
-      } catch (error) { }
-    }
+    deleteFile(`uploads/${req.file.filename}`);
     return sendErrorResponse(res, error.message);
   }
 }
