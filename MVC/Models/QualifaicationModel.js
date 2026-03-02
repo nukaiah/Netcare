@@ -55,7 +55,7 @@ const qualificationSchema = new mongoose.Schema({
         type:String,
         default:null,
     }
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false });
 
 qualificationSchema.index({ userId: 1, education: 1 }, { unique: 1 });
 

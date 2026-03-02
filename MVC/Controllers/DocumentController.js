@@ -140,7 +140,7 @@ documentRouter.post("/updateFile", upload.single("file"), async (req, res) => {
     }
     const oldDocument = await documentSchema.findByIdAndUpdate(
       sId,
-      { $set: { documentUrl: req.file.filename, verificationStatus: "ReUpload" } },
+      { $set: { documentUrl: req.file.filename, verificationStatus: "ReUploaded" } },
       { new: false }
     );
 
@@ -181,7 +181,7 @@ documentRouter.post('/updateDetails', async (req, res) => {
     if (issuedBy !== undefined) updateData.issuedBy = issuedBy;
     if (issueDate !== undefined) updateData.issueDate = issueDate;
     if (expiryDate !== undefined) updateData.expiryDate = expiryDate;
-    updateData.verificationStatus = "ReUpload";
+    updateData.verificationStatus = "ReUploaded";
 
     const response = await documentSchema.findByIdAndUpdate(
       sId,

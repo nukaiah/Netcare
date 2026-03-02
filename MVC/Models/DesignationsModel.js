@@ -12,7 +12,7 @@ const designationSchema = new mongoose.Schema({
         default: "Active",
         enum: ["Active", "InActive"]
     },
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false });
 
 designationSchema.index({designationName:1},{unique:true});
 

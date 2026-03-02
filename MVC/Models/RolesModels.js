@@ -17,7 +17,7 @@ const rolesSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     }
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false });
 
 rolesSchema.index({ roleId: 1 }, { unique: true });
 

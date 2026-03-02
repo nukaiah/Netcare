@@ -25,7 +25,7 @@ const shiftApplicationSchema = new mongoose.Schema({
         type:Date,
         default:null
     }
-},{timestamps:true});
+},{timestamps:true,versionKey:false});
 
 shiftApplicationSchema.index({ shiftId: 1, workerId: 1 },{ unique: true });
 

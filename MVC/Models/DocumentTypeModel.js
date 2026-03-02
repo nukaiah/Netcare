@@ -12,7 +12,7 @@ const documentTypeSchema = new mongoose.Schema({
         type:Number,
         required:true
     }
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false});
 
 documentTypeSchema.index({ documentName: 1 }, { unique: true });
 

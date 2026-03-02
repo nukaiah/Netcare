@@ -61,6 +61,7 @@ const bankSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true,
+    versionKey:false,
     toJSON: { getters: true },
     toObject: { getters: true }
 

@@ -51,7 +51,7 @@ const preferenceSchema = new mongoose.Schema({
         required: true
     }
 
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false });
 
 preferenceSchema.index({ userId: 1 }, { unique: true });
 preferenceSchema.index({ "preferredLocation.id": 1, "preferredDepartments.id": 1, preferredShiftType: 1 });

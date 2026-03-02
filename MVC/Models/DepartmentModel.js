@@ -9,7 +9,7 @@ const departmentSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     }
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false });
 
 departmentSchema.index({ departmentName: 1 }, { unique: true });
 

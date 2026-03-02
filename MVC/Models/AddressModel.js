@@ -58,25 +58,10 @@ const addressSchema = new mongoose.Schema(
             default: null
         }
     },
-    { timestamps: true }
+    { timestamps: true,versionKey:false }
 );
 
 addressSchema.index({ userId: 1 }, { unique: true });
 
 
 export default mongoose.model("Address", addressSchema);
-
-
-// state: {
-//             type: String,
-//             required: true,
-//             trim: true,
-//             maxlength: 255
-//         },
-
-//         city: {
-//             type: String,
-//             required: true,
-//             trim: true,
-//             maxlength: 255
-//         },

@@ -26,7 +26,7 @@ const documentSchema = new mongoose.Schema({
     },
     verificationStatus: {
         type: String,
-        enum: ["Pending", "Verified", "Rejected","ReUpload"],
+        enum: ["Pending", "Verified", "Rejected","ReUploaded"],
         default: "Pending"
     },
     verifiedBy: {

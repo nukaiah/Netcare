@@ -23,7 +23,7 @@ const availabilitySchema = new mongoose.Schema({
     default: true
   }
 
-}, { timestamps: true });
+}, { timestamps: true,versionKey:false});
 
 availabilitySchema.index( { userId: 1, date: 1, shiftType: 1 },{ unique: true });
 
