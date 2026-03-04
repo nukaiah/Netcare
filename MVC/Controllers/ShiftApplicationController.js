@@ -4,15 +4,18 @@ import { sendResponse, sendValidationResponse, sendDuplicateResponse, sendErrorR
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 const shiftApplicationRouter = express.Router();
 import mongoose from 'mongoose';
+import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
+import { sendBulkNotification } from '../MiddleWares/fcm.js';
 
-shiftApplicationRouter.post('/showInterest', async (req, res, next) => {
+
+shiftApplicationRouter.post('/showInterest',checkAuth, async (req, res, next) => {
     try {
-        const applicationData = req.body;
+        const { hospitalId, ...applicationData } = req.body || {};
         const response = await shiftApplicationSchema.insertOne(applicationData);
-        return sendResponse(res, true, "Applied successful", response);
+        const hospitalData = await healthCareWorkerSchema.findById(hospitalId);
+        await sendBulkNotification(res, hospitalData.fcm, "New Shift Application", "A new user has applied for the shift. Please review the application.");
+        return sendResponse(res, true, "Applied successful", "response");
     } catch (error) {
-        console.log(error.name);
-        console.log(error.message);
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map(err => ({ field: err.path, message: err.message }));
             return sendValidationResponse(res, errors);
@@ -26,6 +29,21 @@ shiftApplicationRouter.post('/showInterest', async (req, res, next) => {
     }
 });
 
+shiftApplicationRouter.post('/action',checkAuth, async (req, res, next) => {
+    const { sId, status, userId, hospitalName, shiftDate } = req.body || {};
+    console.log(hospitalName);
+    console.log(shiftDate);
+    const response = await shiftApplicationSchema.findByIdAndUpdate(sId, { $set: { status: status } }, { runValidators: true, new: true });
+    const userData = await healthCareWorkerSchema.findById(userId);
+    if (status === "Approved") {
+        await sendBulkNotification(res, userData.fcm, "Shift Application Approved 🎉", `Good news! Your application for the ${hospitalName} on ${shiftDate} has been approved.`);
+    }
+    else {
+        await sendBulkNotification(res, userData.fcm, "Shift Application Update", `Your application for the ${hospitalName} on ${shiftDate} was not selected this time.`);
+    }
+
+    return sendResponse(res, true, "Status updated", response);
+});
 
 shiftApplicationRouter.post("/getById",checkAuth, async (req, res, next) => {
     try {
@@ -74,9 +92,9 @@ shiftApplicationRouter.post("/getById",checkAuth, async (req, res, next) => {
 });
 
 
-shiftApplicationRouter.post("/punchTime", checkAuth,async (req, res, next) => {
+shiftApplicationRouter.post("/punchTime",checkAuth, async (req, res, next) => {
     try {
-        const { sId,type } = req.body || {};
+        const { sId, type } = req.body || {};
         let query = {};
         let message;
         if (type === "PunchIn") {
@@ -90,7 +108,7 @@ shiftApplicationRouter.post("/punchTime", checkAuth,async (req, res, next) => {
         else {
             return sendValidationResponse(res, "Invlid punch type");
         }
-        const response = await shiftApplicationSchema.findByIdAndUpdate(sId,{ $set: query }, { runValidators: true, new: true });
+        const response = await shiftApplicationSchema.findByIdAndUpdate(sId, { $set: query }, { runValidators: true, new: true });
         return sendResponse(res, true, message, response);
     } catch (error) {
         return sendErrorResponse(res, error.message);

@@ -74,8 +74,8 @@ const sendBulkNotification = async (res, deviceTokens, title, body, data = {}) =
     );
   }
 
-  // console.log(`Total Success: ${totalSuccess}`);
-  // console.log(`Total Failed: ${totalFailure}`);
+  console.log(`Total Success: ${totalSuccess}`);
+  console.log(`Total Failed: ${totalFailure}`);
 
   return {
     success: totalSuccess,

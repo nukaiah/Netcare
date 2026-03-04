@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
-import { decrypt } from '../MiddleWares/EncryptDecrypt.js';
+import { decrypt, encrypt } from '../MiddleWares/EncryptDecrypt.js';
 import { sendResponse, sendErrorResponse, sendLoginResponse, sendValidationResponse, sendNotFoundResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -486,10 +486,13 @@ healthcareworkerRouter.post('/Updatepassword', async (req, res, next) => {
                 { field: "password", message: "Password is required" }
             ]);
         }
-
-        const response = await healthCareWorkerSchema.findOneAndUpdate({email}, { $set: { password: password } }, { new: true, runValidators: true });
+        const user = await healthCareWorkerSchema.findOne({ email }).select("+password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        user.password = password;
+        await user.save(); 
         return sendResponse(res, true, "Password Changed Successfully");
     } catch (error) {
+        console.log(error.message);
         return sendErrorResponse(res, error.message);
 
     }

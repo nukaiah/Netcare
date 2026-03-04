@@ -41,7 +41,8 @@ import locationRouter from './MVC/Controllers/LocationController.js';
 import preferenceRouter from './MVC/Controllers/PrefernceController.js';
 import availabilityRouter from './MVC/Controllers/AvailabilityController.js';
 import designationRouter from './MVC/Controllers/DesignationController.js';
-import otpRouter from './MVC/Controllers/OTPController.js'
+import otpRouter from './MVC/Controllers/OTPController.js';
+import reviewRouter from './MVC/Controllers/ReviewController.js';
 
 
 
@@ -62,6 +63,7 @@ app.use('/api/preference',preferenceRouter);
 app.use("/api/availability",availabilityRouter);
 app.use("/api/designation",designationRouter)
 app.use("/api/OTP",otpRouter)
+app.use("/api/review",reviewRouter);
 
 
 

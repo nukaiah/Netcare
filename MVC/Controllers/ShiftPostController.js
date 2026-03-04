@@ -13,8 +13,6 @@ import { sendEmail } from '../MiddleWares/Email.js';
 ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
     try {
         const { locationId, departmentId } = req.body || {};
-        console.log(locationId);
-        console.log(departmentId);
         const response = await ShiftSchema.create(req.body);
         const usersData = await preferenceSchema.aggregate([
             {
@@ -34,16 +32,14 @@ ShiftRouter.post('/create', checkAuth, async (req, res, next) => {
             { $unwind: "$users" },
             { $project: { fcm: "$users.fcm" } }
         ]);
-        console.log(usersData);
-
         const tokens = [
             ...new Set(
                 usersData
                     .filter(e => e.fcm?.length)
                     .flatMap(e => e.fcm)
             )
-        ]
-        await sendBulkNotification(res, tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.location} matches your preferences.`);
+        ];
+        await sendBulkNotification(res, tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.locationName} matches your preferences.`);
         return sendResponse(res, true, "Shift created successfully", response);
 
     } catch (error) {
@@ -149,6 +145,55 @@ ShiftRouter.post('/getAllWeb', checkAuth, async (req, res) => {
     }
 });
 
+
+ShiftRouter.post('/getAllMobile', async (req, res, next) => {
+    try {
+        const { preferredLocation, designationId } = req.body || {};
+        const matchQuery = {};
+        if (preferredLocation) {
+            matchQuery.locationId = new mongoose.Types.ObjectId(preferredLocation);
+        }
+        if (designationId) {
+            matchQuery.designationId = new mongoose.Types.ObjectId(designationId);
+        }
+
+        const page = Number(req.body.page) || 1;
+        const limit = Math.min(Number(req.body.limit) || 10, 100);
+        const skip = (page - 1) * limit;
+        const response = await ShiftSchema.aggregate([
+            { $match: matchQuery },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: "shiftapplications",
+                    as: "applicants",
+                    let: { queryId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$shiftId", "$$queryId"] }
+                            }
+                        },
+                        {
+                            $project: {
+                                workerId: 1,
+                                status: 1
+                            }
+                        }
+                    ]
+                }
+            },
+
+
+        ]);
+        return sendResponse(res, true, "Data found", response);
+    } catch (error) {
+        return sendErrorResponse(res, error.message);
+    }
+});
+
 ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
     try {
         const page = Number(req.body.page) || 1;
@@ -172,6 +217,17 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
                                     $eq: ["$_id", "$$query"]
                                 }
                             }
+                        },
+                        {
+                            $lookup: {
+                                from: "reviews",
+                                as: "reviewData",
+                                let: { queryId: "$_id" },
+                                pipeline:[
+                                    {$match:{$expr:{$eq:["$shiftId","$$queryId"]}}}
+                                ]
+
+                            }
                         }
                     ]
                 },
@@ -188,84 +244,6 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
         return sendErrorResponse(res, error.message);
     }
 });
-
-
-ShiftRouter.post('/getAllMobile', async (req, res, next) => {
-    try {
-        const { preferredLocation, designationId } = req.body || {};
-        const matchQuery = {};
-        if (preferredLocation) {
-            matchQuery.locationId = new mongoose.Types.ObjectId(preferredLocation);
-        }
-        if (designationId) {
-            matchQuery.designationId = new mongoose.Types.ObjectId(designationId);
-        }
-        
-        const page = Number(req.body.page) || 1;
-        const limit = Math.min(Number(req.body.limit) || 10, 100);
-        const skip = (page - 1) * limit;
-        const response = await ShiftSchema.aggregate([
-            { $match: matchQuery },
-            { $sort: { createdAt: -1 } },
-            { $skip: skip },
-            { $limit: limit },
-            {
-                $lookup: {
-                    from: "healthcareworkers",
-                    as: "hospitalData",
-                    let: { queryId: "$hospitalId" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$_id", "$$queryId"] }
-                            }
-                        },
-                        {
-                            $project: {
-                                fullName: 1,
-                                verificationStatus: 1
-                            }
-                        }
-                    ]
-                }
-            },
-
-            {
-                $lookup: {
-                    from: "shiftapplications",
-                    as: "applicants",
-                    let: { queryId: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$shiftId", "$$queryId"] }
-                            }
-                        },
-                        {
-                            $project: {
-                                workerId: 1,
-                                status: 1
-                            }
-                        }
-                    ]
-                }
-            },
-
-            {
-                $unwind: {
-                    path: "$hospitalData",
-                    preserveNullAndEmptyArrays: true
-                }
-            }
-        ]);
-        return sendResponse(res, true, "Data found", response);
-    } catch (error) {
-        return sendErrorResponse(res, error.message);
-    }
-});
-
-// 
-
 
 
 
