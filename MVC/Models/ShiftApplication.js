@@ -24,6 +24,19 @@ const shiftApplicationSchema = new mongoose.Schema({
     endTime:{
         type:Date,
         default:null
+    },
+    isUserReview:{
+        type:Boolean,
+        default:false
+    },
+    isAdminReview:{
+        type:Boolean,
+        default:false
+    },
+    shiftStatus:{
+        type:String,
+        default: "Waiting For Approval",
+        enum:["Waiting For Approval","Yet To Start","Ongoing","Completed"]
     }
 },{timestamps:true,versionKey:false});
 

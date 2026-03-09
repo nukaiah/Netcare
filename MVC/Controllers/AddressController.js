@@ -27,8 +27,6 @@ addressRouter.post("/insertUpdate", checkAuth, async (req, res, next) => {
             return sendValidationResponse(res, errors);
         }
         if (error.code === 11000) {
-            const field = Object.keys(error.keyValue)[0];
-            const value = error.keyValue[field];
             return sendDuplicateResponse(res, "Duplicate address found!.You have already have an adress,you can not add another", error.keyValue);
         }
         return sendErrorResponse(res, error.message, {});

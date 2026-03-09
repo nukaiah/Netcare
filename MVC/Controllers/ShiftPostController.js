@@ -199,38 +199,63 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
         const page = Number(req.body.page) || 1;
         const limit = Math.min(Number(req.body.limit) || 10, 100);
         const skip = (page - 1) * limit;
+
+
         const workerObjectId = new mongoose.Types.ObjectId(req.userId);
+
         const response = await ShiftApplication.aggregate([
-            { $match: { workerId: workerObjectId } },
-            { $sort: { createdAt: -1 } },
-            { $skip: skip },
-            { $limit: limit },
+            {
+                $match: { workerId: workerObjectId }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $skip: skip
+            },
+            {
+                $limit: limit
+            },
             {
                 $lookup: {
                     from: "shifts",
                     as: "shiftData",
-                    let: { query: "$shiftId" },
+                    let: {
+                        shiftId: "$shiftId",
+                        workerId: workerObjectId
+                    },
                     pipeline: [
                         {
                             $match: {
-                                $expr: {
-                                    $eq: ["$_id", "$$query"]
-                                }
+                                $expr: { $eq: ["$_id", "$$shiftId"] }
                             }
                         },
                         {
                             $lookup: {
                                 from: "reviews",
                                 as: "reviewData",
-                                let: { queryId: "$_id" },
-                                pipeline:[
-                                    {$match:{$expr:{$eq:["$shiftId","$$queryId"]}}}
-                                ]
+                                let: {
+                                    shiftId: "$_id",
+                                    workerId: "$$workerId"
+                                },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ["$shiftId", "$$shiftId"] },
+                                                    { $eq: ["$targetId", "$$workerId"] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
 
                             }
                         }
-                    ]
-                },
+                    ],
+
+                }
             },
             {
                 $unwind: {
@@ -238,10 +263,33 @@ ShiftRouter.post('/getAllMyShifts', checkAuth, async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
+            {
+                $unwind: {
+                    path: "$shiftData.reviewData",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    "shiftData.reviewData": {
+                        $ifNull: ["$shiftData.reviewData", {}]
+                    }
+                }
+            }
         ]);
         return sendResponse(res, true, "Shift found successfully", response);
     } catch (error) {
         return sendErrorResponse(res, error.message);
+    }
+});
+
+ShiftRouter.post("/updateStatus", async (req, res, next) => {
+    try {
+        const { sId,status} = req.body || {};
+        const response = await ShiftSchema.findByIdAndUpdate(sId, { $set: {status:status}},{runValidators:true,new:true});
+        return sendResponse(res,true,"Status updated",response);
+    } catch (error) {
+        return sendErrorResponse(res,error.message);
     }
 });
 

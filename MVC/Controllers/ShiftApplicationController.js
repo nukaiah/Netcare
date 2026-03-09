@@ -6,6 +6,7 @@ const shiftApplicationRouter = express.Router();
 import mongoose from 'mongoose';
 import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
 import { sendBulkNotification } from '../MiddleWares/fcm.js';
+import ShiftApplication from '../Models/ShiftApplication.js';
 
 
 shiftApplicationRouter.post('/showInterest',checkAuth, async (req, res, next) => {
@@ -33,7 +34,7 @@ shiftApplicationRouter.post('/action',checkAuth, async (req, res, next) => {
     const { sId, status, userId, hospitalName, shiftDate } = req.body || {};
     console.log(hospitalName);
     console.log(shiftDate);
-    const response = await shiftApplicationSchema.findByIdAndUpdate(sId, { $set: { status: status } }, { runValidators: true, new: true });
+    const response = await shiftApplicationSchema.findByIdAndUpdate(sId, { $set: { status: status,"shiftStatus":"Yet To Start" } }, { runValidators: true, new: true });
     const userData = await healthCareWorkerSchema.findById(userId);
     if (status === "Approved") {
         await sendBulkNotification(res, userData.fcm, "Shift Application Approved 🎉", `Good news! Your application for the ${hospitalName} on ${shiftDate} has been approved.`);
@@ -94,26 +95,36 @@ shiftApplicationRouter.post("/getById",checkAuth, async (req, res, next) => {
 
 shiftApplicationRouter.post("/punchTime",checkAuth, async (req, res, next) => {
     try {
-        const { sId, type } = req.body || {};
+        const { sId, type,workerId } = req.body || {};
+        console.log(workerId);
         let query = {};
         let message;
         if (type === "PunchIn") {
-            query = { "startTime": new Date().toISOString() };
+            query = { "shiftStatus":"Ongoing","startTime": new Date().toISOString() };
             message = "PunchIn success";
         }
         else if (type === "PunchOut") {
-            query = { "endTime": new Date().toISOString() };
+            query = { "shiftStatus":"Completed","endTime": new Date().toISOString() };
             message = "PunchOut success";
         }
         else {
             return sendValidationResponse(res, "Invlid punch type");
         }
         const response = await shiftApplicationSchema.findByIdAndUpdate(sId, { $set: query }, { runValidators: true, new: true });
+        const userData = await healthCareWorkerSchema.findById(workerId);
+        console.log(userData.fcm);
+        if(type==="PunchIn"){
+            await sendBulkNotification(res, userData.fcm, "Shift Punch-In Alert", `${userData.fullName} has punched in and started the scheduled shift.`);
+        }
+        else{
+            await sendBulkNotification(res,userData.fcm,"Shift Punch-Out Alert",`${userData.fullName} has punched out and completed the scheduled shift.`);
+        }
         return sendResponse(res, true, message, response);
     } catch (error) {
         return sendErrorResponse(res, error.message);
     }
 });
+
 
 
 export default shiftApplicationRouter;

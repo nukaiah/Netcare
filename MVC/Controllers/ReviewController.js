@@ -3,11 +3,22 @@ const reviewRouter = express.Router();
 import reviewSchema from '../Models/ReviewModel.js';
 import { sendErrorResponse, sendResponse, sendValidationResponse, sendDuplicateResponse } from "../MiddleWares/Response.js";
 import { checkAuth } from "../MiddleWares/CheckAuth.js";
+import ShiftApplication from "../Models/ShiftApplication.js";
 
 reviewRouter.post('/create', async (req, res, next) => {
     try {
-        const data = req.body || {};
+        const { shiftApplicationId, ...data } = req.body || {};
+        let query = {};
         const response = await reviewSchema.create(data);
+        console.log(data.reviewerType);
+        if (data.reviewerType === "facility") {
+            query = { isAdminReview: true };
+        }
+        if (data.reviewerType === "worker") {
+            query = { isUserReview: true };
+        }
+        console.log(query);
+        const result = await ShiftApplication.findByIdAndUpdate(shiftApplicationId, { $set: query });
         return sendResponse(res, true, 'Rated successfully', response);
 
     } catch (error) {
@@ -21,5 +32,7 @@ reviewRouter.post('/create', async (req, res, next) => {
         return sendErrorResponse(res, error.message);
     }
 });
+
+
 
 export default reviewRouter;
