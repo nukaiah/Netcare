@@ -5,8 +5,9 @@ import { decrypt, encrypt } from '../MiddleWares/EncryptDecrypt.js';
 import { sendResponse, sendErrorResponse, sendLoginResponse, sendValidationResponse, sendNotFoundResponse, sendDuplicateResponse } from '../MiddleWares/Response.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import upload, { deleteFile } from '../MiddleWares/UploadFile.js';
 dotenv.config();
+import upload, { deleteFile } from '../MiddleWares/UploadFile.js';
+
 import { checkAuth } from '../MiddleWares/CheckAuth.js';
 import { comparePassword, hashPassword } from '../MiddleWares/PasswordHash.js';
 import { sendEmail } from '../MiddleWares/Email.js';
