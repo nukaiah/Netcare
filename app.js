@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 
 
-const mongoURI = process.env.LOCAL_DB_URL;
+const mongoURI = process.env.CLOUD_DB_URL_TEST;
 
 mongoose.set("strictQuery", false);
 
@@ -16,7 +16,7 @@ try {
   await mongoose.connect(mongoURI);
   console.log("Connected Successfully");
 } catch (err) {
-  console.error("Failed to Connect");
+  console.error(err);
 }
 
 app.use(cors());
