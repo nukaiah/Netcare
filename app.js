@@ -15,11 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-import healthcareworkerRouter from './MVC/Controllers/HealtCareWorkerController.js';
-// import shiftpostRouter from './MVC/Controllers/ShiftPostController.js';
-// import shiftApplicationRouter from './MVC/Controllers/ShiftApplicationController.js';
-import reviewRouter from './MVC/Controllers/ReviewController.js';
-
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
@@ -29,13 +24,21 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   },
 }),
 );
-
-
-app.use('/api/healthCareWorker', healthcareworkerRouter);
 app.use("/uploads", express.static("uploads"));
 
 
-app.use("/api/review", reviewRouter);
+
+
+
+import healthcareworkerRouter from './MVC/Controllers/HealtCareWorkerController.js';
+// import shiftpostRouter from './MVC/Controllers/ShiftPostController.js';
+// import shiftApplicationRouter from './MVC/Controllers/ShiftApplicationController.js';
+
+app.use('/api/healthCareWorker', healthcareworkerRouter);
+
+
+
+
 
 
 
@@ -64,6 +67,7 @@ import superAdminRouter from './src/Routes/SuperAdminDashboardRouter.js';
 import documentActivityRouter from './src/Routes/DocumentActivityRouter.js';
 import preferenceRouter from './src/Routes/PrefernceRouter.js';
 import availabilityRouter from './src/Routes/AvailabilityRouter.js';
+import reviewRouter from './src/Routes/ReviewRouter.js';
 
 
 
@@ -88,6 +92,7 @@ app.use('/api/documentType', documentTypeRouter);
 app.use('/api/department', departmentRouter);
 app.use('/api/document', documentRouter);
 app.use("/api/availability", availabilityRouter);
+app.use("/api/review", reviewRouter);
 
 
 

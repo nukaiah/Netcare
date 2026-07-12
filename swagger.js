@@ -102,6 +102,11 @@ const { swagger: UpdatePreferenceRequest } = j2s(updatePreferenceValidation);
 /* Avaialability */
 import { createAvailabilityValidation } from './src/Validations/AvaialbilityValidation.js';
 const { swagger: CreateAvailabilityRequest } = j2s(createAvailabilityValidation);
+
+
+/* Avaialability */
+import { createReviewValidation } from './src/Validations/ReviewValidations.js';
+const { swagger: CreateReviewRequest } = j2s(createReviewValidation);
                 
 
 
@@ -203,6 +208,9 @@ const options = {
 
                 /* Availability*/
                 CreateAvailabilityRequest,
+
+                /* Review */
+                CreateReviewRequest
 
             },
 
