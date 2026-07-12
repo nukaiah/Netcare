@@ -1,5 +1,6 @@
 import Joi from "joi";
 
+
 const ShiftPostValidation = Joi.object({
     hospitalId: Joi.string().required().messages({
         "any.required": "Hospital id is required",
@@ -96,6 +97,7 @@ const ShiftPostValidation = Joi.object({
         })
 });
 
+
 const getWebShiftsValidation = Joi.object({
     id: Joi.string().required().messages({
         "any.required": "Id is required",
@@ -104,6 +106,7 @@ const getWebShiftsValidation = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10)
 });
+
 
 const updateShiftStatusValidation = Joi.object({
     id: Joi.string().required().messages({
@@ -119,4 +122,55 @@ const updateShiftStatusValidation = Joi.object({
 });
 
 
-export { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation };
+const getAllMobileValidation = Joi.object({
+    preferredLocation: Joi.string().optional().messages({
+        "string.base": "Preferred location must be a string"
+    }),
+
+    designationId: Joi.string().optional().messages({
+        "string.base": "Designation id must be a string"
+    }),
+
+    page: Joi.number().integer().min(1).default(1).optional().messages({
+        "number.base": "Page must be a number",
+        "number.integer": "Page must be an integer",
+        "number.min": "Page must be at least 1"
+    }),
+
+    limit: Joi.number().integer().min(1).max(100).default(10).optional().messages({
+        "number.base": "Limit must be a number",
+        "number.integer": "Limit must be an integer",
+        "number.min": "Limit must be at least 1",
+        "number.max": "Limit cannot be greater than 100"
+    })
+});
+
+
+const getMyShiftsValidation = Joi.object({
+    page: Joi.number()
+        .integer()
+        .min(1)
+        .default(1)
+        .optional()
+        .messages({
+            "number.base": "Page must be a number",
+            "number.integer": "Page must be an integer",
+            "number.min": "Page must be greater than or equal to 1"
+        }),
+
+    limit: Joi.number()
+        .integer()
+        .min(1)
+        .max(100)
+        .default(10)
+        .optional()
+        .messages({
+            "number.base": "Limit must be a number",
+            "number.integer": "Limit must be an integer",
+            "number.min": "Limit must be greater than or equal to 1",
+            "number.max": "Limit cannot be greater than 100"
+        })
+});
+
+
+export { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation,getMyShiftsValidation };

@@ -2,7 +2,7 @@ import express from 'express';
 const shiftpostRouter = express.Router();
 import { checkAuth, checkHealthcareWorker, checkhospitalAdmin } from '../Utils/Jwt_Token.js';
 import validateRequest from '../Utils/Vlaidations.js';
-import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation } from '../Validations/ShiftPostValidation.js';
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation,getAllMobileValidation,getMyShiftsValidation} from '../Validations/ShiftPostValidation.js';
 import { createShiftController, getWebShiftController, getMobileShiftController, getAllMyShiftController, updateShiftStausController, getWebDashboardAnalyticsController } from "../Controllers/ShiftPostController.js";
 
 
@@ -59,9 +59,66 @@ shiftpostRouter.post("/create", checkAuth, checkhospitalAdmin, validateRequest(S
 shiftpostRouter.post("/getAllWeb", checkAuth, checkhospitalAdmin, validateRequest(getWebShiftsValidation), getWebShiftController);
 
 
-shiftpostRouter.post("/getAllMobile", checkAuth, checkHealthcareWorker, getMobileShiftController);
+/**
+ * @swagger
+ * /api/shift/getAllMobile:
+ *   post:
+ *     tags:
+ *       - Shifts
+ *     summary: Get Shifts for mobile
+ *     description: |
+ *       Returns a paginated list of shifts for healthcare workers.
+ *       The results can be filtered by preferred location and designation.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GetAllMobileShiftRequest'
+ *     responses:
+ *       200:
+ *         description: Shifts fetched successfully.
+ *       400:
+ *         description: Validation error.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Only healthcare workers can access this endpoint.
+ *       500:
+ *         description: Internal server error.
+ */
+shiftpostRouter.post("/getAllMobile", checkAuth, checkHealthcareWorker,validateRequest(getAllMobileValidation), getMobileShiftController);
 
-shiftpostRouter.post("/getAllMyShifts", checkAuth, checkHealthcareWorker, getMobileShiftController);
+
+/**
+ * @swagger
+ * /api/shift/getAllMyShifts:
+ *   post:
+ *     tags:
+ *       - Shifts
+ *     summary: Get my shifts
+ *     description: Returns a paginated list of shifts applied for by the authenticated healthcare worker, including review information if available.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GetMyShiftsRequest'
+ *     responses:
+ *       200:
+ *         description: Shifts fetched successfully.
+ *       400:
+ *         description: Validation error.
+ *       401:
+ *         description: Unauthorized.
+ *       500:
+ *         description: Internal server error.
+ */
+shiftpostRouter.post("/getAllMyShifts", checkAuth, checkHealthcareWorker, validateRequest(getMyShiftsValidation),getMobileShiftController);
 
 /**
  * @swagger

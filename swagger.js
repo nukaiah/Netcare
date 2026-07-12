@@ -88,10 +88,14 @@ import { DocumentUplodaValidation, DocumentUpdateValidation } from './src/Valida
 const { swagger: DocumentUploadRequest } = j2s(DocumentUplodaValidation);
 const { swagger: VerifyDocumentRequest } = j2s(DocumentUpdateValidation);
 
-import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation } from "./src/Validations/ShiftPostValidation.js"
+/* Shifts */
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation ,getAllMobileValidation,getMyShiftsValidation} from "./src/Validations/ShiftPostValidation.js"
 const { swagger: ShiftPostSchema } = j2s(ShiftPostValidation);
 const { swagger: GetWebShiftsSchema } = j2s(getWebShiftsValidation);
 const { swagger: UpdateShiftStatusSchema } = j2s(updateShiftStatusValidation);
+const { swagger: GetAllMobileShiftRequest } = j2s(getAllMobileValidation);
+const { swagger: GetMyShiftsRequest } = j2s(getMyShiftsValidation);
+
 
 /* Prefernce */
 import { PreferenceValidation, updatePreferenceValidation } from './src/Validations/PreferenceValidation.js';
@@ -121,7 +125,7 @@ const options = {
         },
         servers: [
             {
-                url: "http://192.168.100.16:3000",
+                url: "http://192.168.0.133:3000",
                 description: "Development server"
             }
         ],
@@ -200,6 +204,8 @@ const options = {
                 ShiftPostSchema,
                 GetWebShiftsSchema,
                 UpdateShiftStatusSchema,
+                GetAllMobileShiftRequest,
+                GetMyShiftsRequest,
 
 
                 /* Prefernce */
