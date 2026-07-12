@@ -145,5 +145,5 @@ const deleteFile = async (publicId, resourceType = "auto") => {
   }
 };
 
-export { createUpload, uploadFile, deleteFile }
+export { createUpload, uploadFile, deleteFile };
 
