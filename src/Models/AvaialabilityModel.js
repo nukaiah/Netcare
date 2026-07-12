@@ -23,9 +23,10 @@ const availabilitySchema = new mongoose.Schema({
     default: true
   }
 
-}, { timestamps: true,versionKey:false});
+}, { timestamps: true, versionKey: false });
 
-availabilitySchema.index( { userId: 1, date: 1, shiftType: 1 },{ unique: true });
+availabilitySchema.index({ userId: 1, date: 1, shiftType: 1 }, { unique: true });
 
+const AvailabilityModel = mongoose.model("ShiftAvailability", availabilitySchema)
 
-export default mongoose.model("ShiftAvailability", availabilitySchema);
+export default AvailabilityModel;

@@ -21,7 +21,7 @@ const { swagger: GetByIdRequest } = j2s(getByIdValidation);
 
 /* Users */
 import getByUserIdValidation from "./src/Validations/GetByUserIdValidation.js";
-import {userUpdateValidationSchema,updateFcmTokenValidation,getUsersValidation,userStatusValidation}from "./src/Validations/UserValidations.js";
+import { userUpdateValidationSchema, updateFcmTokenValidation, getUsersValidation, userStatusValidation } from "./src/Validations/UserValidations.js";
 const { swagger: GetCurrentUserRequest } = j2s(getByUserIdValidation);
 const { swagger: UpdateUserDetailsRequest } = j2s(userUpdateValidationSchema);
 const { swagger: UpdateFcmRequest } = j2s(updateFcmTokenValidation);
@@ -32,7 +32,7 @@ const { swagger: UserStatusSchema } = j2s(userStatusValidation);
 
 
 /* Locations */
-import {createStateValidation,createCityValidation,locationTypeValidation,getAllCityValidation,updateStateValidation,updateCityValidation}from "./src/Validations/LocationValidation.js";
+import { createStateValidation, createCityValidation, locationTypeValidation, getAllCityValidation, updateStateValidation, updateCityValidation } from "./src/Validations/LocationValidation.js";
 const { swagger: CreateStateRequest } = j2s(createStateValidation);
 const { swagger: CreateCityRequest } = j2s(createCityValidation);
 const { swagger: GetAllLocationsRequest } = j2s(locationTypeValidation);
@@ -52,7 +52,7 @@ const { swagger: CreateBankRequest } = j2s(BankValidation);
 const { swagger: UpdateBankRequest } = j2s(updateBankValidation);
 
 /* Banks Master */
-import { createBankValidation} from './src/Validations/BanksValidation.js';
+import { createBankValidation } from './src/Validations/BanksValidation.js';
 const { swagger: CreateBankMasterRequest } = j2s(createBankValidation);
 
 /* Qualification */
@@ -61,37 +61,48 @@ const { swagger: CreateQualificationRequest } = j2s(qualificationValidation);
 const { swagger: UpdateQualificationRequest } = j2s(qualificationUpdateValidation);
 
 /* Experiance */
-import { ExperianceValidation,updateExperianceValidation } from './src/Validations/ExperianceValidation.js';
+import { ExperianceValidation, updateExperianceValidation } from './src/Validations/ExperianceValidation.js';
 const { swagger: CreateExperienceRequest } = j2s(ExperianceValidation);
 const { swagger: UpdateExperienceRequest } = j2s(updateExperianceValidation);
 
 /* Deparment */
-import { DeparmentValidation,updateDepartmentValidation } from './src/Validations/DepartmentValidation.js';
+import { DeparmentValidation, updateDepartmentValidation } from './src/Validations/DepartmentValidation.js';
 const { swagger: CreateDepartmentRequest } = j2s(DeparmentValidation);
 const { swagger: UpdateDepartmentRequest } = j2s(updateDepartmentValidation);
 
 
 /* DocumentType */
-import { DocumentTypeValidation,updateDocumentTypeValidation,getAllDocumentTypeValidatiion } from './src/Validations/DocumentTypeValidation.js';
+import { DocumentTypeValidation, updateDocumentTypeValidation, getAllDocumentTypeValidatiion } from './src/Validations/DocumentTypeValidation.js';
 const { swagger: CreateDocumentTypeRequest } = j2s(DocumentTypeValidation);
 const { swagger: GetAllDocumentTypeRequest } = j2s(getAllDocumentTypeValidatiion);
 const { swagger: UpdateDocumentTypeRequest } = j2s(updateDocumentTypeValidation);
 
 
 /* Designation */
-import { designationValidation,updateDesignationValidation } from './src/Validations/DesignationValidation.js';
+import { designationValidation, updateDesignationValidation } from './src/Validations/DesignationValidation.js';
 const { swagger: CreateDesignationRequest } = j2s(designationValidation);
 const { swagger: UpdateDesignationRequest } = j2s(updateDesignationValidation);
 
 /* Documents */
-import { DocumentUplodaValidation,DocumentUpdateValidation } from './src/Validations/DocumentsValidation.js';
+import { DocumentUplodaValidation, DocumentUpdateValidation } from './src/Validations/DocumentsValidation.js';
 const { swagger: DocumentUploadRequest } = j2s(DocumentUplodaValidation);
 const { swagger: VerifyDocumentRequest } = j2s(DocumentUpdateValidation);
 
-import {ShiftPostValidation,getWebShiftsValidation,updateShiftStatusValidation} from "./src/Validations/ShiftPostValidation.js"
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation } from "./src/Validations/ShiftPostValidation.js"
 const { swagger: ShiftPostSchema } = j2s(ShiftPostValidation);
 const { swagger: GetWebShiftsSchema } = j2s(getWebShiftsValidation);
 const { swagger: UpdateShiftStatusSchema } = j2s(updateShiftStatusValidation);
+
+/* Prefernce */
+import { PreferenceValidation, updatePreferenceValidation } from './src/Validations/PreferenceValidation.js';
+const { swagger: CreatePreferenceRequest } = j2s(PreferenceValidation);
+const { swagger: UpdatePreferenceRequest } = j2s(updatePreferenceValidation);
+
+
+/* Avaialability */
+import { createAvailabilityValidation } from './src/Validations/AvaialbilityValidation.js';
+const { swagger: CreateAvailabilityRequest } = j2s(createAvailabilityValidation);
+                
 
 
 
@@ -167,7 +178,7 @@ const options = {
                 CreateDocumentTypeRequest,
                 GetAllDocumentTypeRequest,
 
-                 /* DocumentType  */
+                /* DocumentType  */
                 CreateDocumentTypeRequest,
                 GetAllDocumentTypeRequest,
                 UpdateDocumentTypeRequest,
@@ -175,7 +186,7 @@ const options = {
                 /* Designation */
                 CreateDesignationRequest,
                 UpdateDesignationRequest,
-                
+
                 /* Documnets */
                 DocumentUploadRequest,
                 VerifyDocumentRequest,
@@ -185,6 +196,13 @@ const options = {
                 GetWebShiftsSchema,
                 UpdateShiftStatusSchema,
 
+
+                /* Prefernce */
+                CreatePreferenceRequest,
+                UpdatePreferenceRequest,
+
+                /* Availability*/
+                CreateAvailabilityRequest,
 
             },
 
