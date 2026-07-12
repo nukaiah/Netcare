@@ -1,3 +1,4 @@
+/*
 import express from 'express';
 import documentSchema from '../Models/DocumentsModel.js';
 import { sendErrorResponse, sendResponse, sendValidationResponse, sendDuplicateResponse, sendNotFoundResponse } from '../MiddleWares/Response.js';
@@ -195,3 +196,5 @@ documentRouter.post('/updateDetails', async (req, res) => {
 
 
 export default documentRouter;
+
+*/

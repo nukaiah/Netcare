@@ -3,7 +3,7 @@ const reviewRouter = express.Router();
 import reviewSchema from '../Models/ReviewModel.js';
 import { sendErrorResponse, sendResponse, sendValidationResponse, sendDuplicateResponse } from "../MiddleWares/Response.js";
 import { checkAuth } from "../MiddleWares/CheckAuth.js";
-import ShiftApplication from "../Models/ShiftApplication.js";
+// import ShiftApplication from "../Models/ShiftApplication.js";
 import Razorpay from "razorpay";
 import dotenv from 'dotenv';
 dotenv.config();
@@ -49,15 +49,15 @@ reviewRouter.post('/openPayment', async (req, res, next) => {
         };
         console.log(instance.paymentLink);
         const response = await instance.orders.create({
-  "amount": 50000,
-  "currency": "INR",
-  "receipt": "receipt#1",
-  "partial_payment": false,
-  "notes": {
-    "key1": "value3",
-    "key2": "value2"
-  }
-})
+            "amount": 50000,
+            "currency": "INR",
+            "receipt": "receipt#1",
+            "partial_payment": false,
+            "notes": {
+                "key1": "value3",
+                "key2": "value2"
+            }
+        })
 
         // const order = await instance.orders.all();
         // console.log(order);
@@ -65,7 +65,7 @@ reviewRouter.post('/openPayment', async (req, res, next) => {
 
 
     } catch (error) {
-        return sendErrorResponse(res, error.message,error);
+        return sendErrorResponse(res, error.message, error);
     }
 
 });

@@ -1,0 +1,17 @@
+import mongoose from "mongoose";
+
+const departmentSchema = new mongoose.Schema({
+    departmentName: {
+        type: String,
+        required: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    }
+}, { timestamps: true,versionKey:false });
+
+departmentSchema.index({ departmentName: 1 }, { unique: true });
+
+const DepartmentModel = mongoose.model("Department",departmentSchema)
+export default DepartmentModel;

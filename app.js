@@ -1,76 +1,103 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger.js';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-dotenv.config(); 
+dotenv.config();
 
 const app = express();
 
-
-const mongoURI = process.env.CLOUD_DB_URL_TEST;
-
-mongoose.set("strictQuery", false);
-
-try {
-  await mongoose.connect(mongoURI);
-  console.log("Connected Successfully");
-} catch (err) {
-  console.error(err);
-}
-
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 
-import roleRouter from './MVC/Controllers/RolesController.js';
+
 import healthcareworkerRouter from './MVC/Controllers/HealtCareWorkerController.js';
-import documentTypeRouter from './MVC/Controllers/DocumentTypeController.js';
-import documentRouter from './MVC/Controllers/DocumentController.js';
-import departmentRouter from './MVC/Controllers/DepartmentController.js';
-import shiftpostRouter from './MVC/Controllers/ShiftPostController.js';
-import shiftApplicationRouter from './MVC/Controllers/ShiftApplicationController.js';
-import bankRouter from './MVC/Controllers/BankDetailsController.js';
-import addressRouter from './MVC/Controllers/AddressController.js';
-import experienceRouter from './MVC/Controllers/ExperianceController.js';
-import qualificationRouter from './MVC/Controllers/QualificationController.js';
-import locationRouter from './MVC/Controllers/LocationController.js';
-import preferenceRouter from './MVC/Controllers/PrefernceController.js';
+// import shiftpostRouter from './MVC/Controllers/ShiftPostController.js';
+// import shiftApplicationRouter from './MVC/Controllers/ShiftApplicationController.js';
+// import preferenceRouter from './MVC/Controllers/PrefernceController.js';
 import availabilityRouter from './MVC/Controllers/AvailabilityController.js';
-import designationRouter from './MVC/Controllers/DesignationController.js';
-import otpRouter from './MVC/Controllers/OTPController.js';
 import reviewRouter from './MVC/Controllers/ReviewController.js';
 
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  swaggerOptions: {
+    tagsSorter: "alpha",
+    docExpansion: "none",
+  },
+}),
+);
 
-app.use('/api/roles',roleRouter)
-app.use('/api/healthCareWorker',healthcareworkerRouter);
-app.use('/api/documentType',documentTypeRouter);
+
+app.use('/api/healthCareWorker', healthcareworkerRouter);
 app.use("/uploads", express.static("uploads"));
-app.use('/api/document',documentRouter);
-app.use('/api/department',departmentRouter);
-app.use('/api/shift',shiftpostRouter);
-app.use('/api/shiftApplication',shiftApplicationRouter);
-app.use('/api/bankDetails',bankRouter);
-app.use('/api/address', addressRouter);
-app.use('/api/experiance', experienceRouter);
+
+// app.use('/api/preference', preferenceRouter);
+app.use("/api/availability", availabilityRouter);
+app.use("/api/review", reviewRouter);
+
+
+
+import handleError from './src/Utils/HandelError.js';
+import { notFoundResponse } from './src/Utils/Response.js';
+
+
+import authenticationRouter from './src/Routes/AuthenticationRouter.js';
+import auditLogRouter from './src/Routes/AuditLogRouter.js';
+import otpRouter from './src/Routes/OtpRouter.js';
+import userRouter from './src/Routes/UserRouter.js';
+import addressRouter from './src/Routes/AddressRouter.js';
+import bankDetailsRouter from './src/Routes/BankDetailsRouter.js';
+import bankRouter from './src/Routes/BankRouters.js';
+import qualificationRouter from './src/Routes/QualificationRouter.js';
+import roleRouter from './src/Routes/RoleRouter.js';
+import locationRouter from './src/Routes/LocationRouter.js';
+import documentTypeRouter from './src/Routes/DocumentTypeRouter.js';
+import designationRouter from './src/Routes/DesignationRouter.js';
+import departmentRouter from './src/Routes/DepartmentRouter.js';
+import experianceRouter from './src/Routes/ExperianceRouter.js';
+import documentRouter from './src/Routes/DocumentRouter.js';
+import shiftpostRouter from './src/Routes/ShiftPostRouter.js';
+import shiftApplicantRouter from './src/Routes/ShiftApplicantRouter.js';
+import superAdminRouter from './src/Routes/SuperAdminDashboardRouter.js';
+import documentActivityRouter from './src/Routes/DocumentActivityRouter.js';
+
+
+
+app.use("/api/address", addressRouter);
+app.use("/api/aufitLog", auditLogRouter);
+app.use("/api/authentication", authenticationRouter);
+app.use('/api/bankDetails', bankDetailsRouter);
+app.use('/api/banks', bankRouter);
+app.use("/api/designation", designationRouter);
+app.use('/api/experience', experianceRouter);
+app.use('/api/location', locationRouter);
+app.use("/api/otp", otpRouter);;
 app.use('/api/qualification', qualificationRouter);
-app.use('/api/location',locationRouter);
-app.use('/api/preference',preferenceRouter);
-app.use("/api/availability",availabilityRouter);
-app.use("/api/designation",designationRouter)
-app.use("/api/OTP",otpRouter)
-app.use("/api/review",reviewRouter);
+app.use('/api/shift', shiftpostRouter);
+app.use('/api/shiftApplication', shiftApplicantRouter);
+app.use('/api/superAdmin', superAdminRouter);
+app.use("/api/user", userRouter);
+app.use("/api/documentActivity", documentActivityRouter);
+
+
+app.use('/api/roles', roleRouter);
+app.use('/api/documentType', documentTypeRouter);
+app.use('/api/department', departmentRouter);
+app.use('/api/document', documentRouter);
 
 
 
-app.use('/', (req, res) => {
-  res.status(404).json({
-    status: false,
-    message: 'Invalid path',
-  });
+app.use((req, res, next) => {
+  return notFoundResponse(res, `Cannot ${req.method} ${req.originalUrl}`);
+});
+
+app.use((error, req, res, next) => {
+  return handleError(res, error);
 });
 
 export default app;

@@ -1,0 +1,52 @@
+import mongoose from "mongoose";
+
+const shiftApplicationSchema = new mongoose.Schema({
+    shiftId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    },
+    hospitalId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    },
+    workerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    },
+
+    status: {
+        type: String,
+        enum: ["Applied", "Approved", "Rejected"],
+        required: true
+    },
+    respondedAt: {
+        type: Date
+    },
+    startTime:{
+        type:Date,
+        default:null
+    },
+    endTime:{
+        type:Date,
+        default:null
+    },
+    isUserReview:{
+        type:Boolean,
+        default:false
+    },
+    isAdminReview:{
+        type:Boolean,
+        default:false
+    },
+    shiftStatus:{
+        type:String,
+        default: "Waiting For Approval",
+        enum:["Waiting For Approval","Yet To Start","Ongoing","Completed"]
+    }
+},{timestamps:true,versionKey:false});
+
+shiftApplicationSchema.index({ shiftId: 1, workerId: 1 },{ unique: true });
+
+const ShiftApplicants = mongoose.model("ShiftApplication",shiftApplicationSchema);
+
+export default ShiftApplicants;

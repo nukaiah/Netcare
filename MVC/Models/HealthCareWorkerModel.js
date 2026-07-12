@@ -149,4 +149,16 @@ healthCareWorkerSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
+
+healthCareWorkerSchema.statics.validateEmail = function (email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+healthCareWorkerSchema.statics.validateMobileNumber = function (number) {
+  const phoneRegex = /^(\+?\d{1,4}[-.\s]?)?(\(?\d{1,5}\)?[-.\s]?){1,5}\d{1,5}$/;
+  return phoneRegex.test(number);
+};
+
+
 export default mongoose.model("Healthcareworker", healthCareWorkerSchema);

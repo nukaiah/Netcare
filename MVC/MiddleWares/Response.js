@@ -8,8 +8,6 @@ export function sendResponse(res, status, message, data = {}) {
 
 
 
-
-
 export function sendValidationResponse(res,error = {}) {
     return res.status(400).json({
         status:false,
