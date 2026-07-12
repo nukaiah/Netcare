@@ -1,7 +1,7 @@
 import express from 'express';
 import { GetHopitalShiftApplicantsController, showInterestController, actionController, getApplicantsController, punchTimeController  } from "../Controllers/ShiftApplicantsController.js";
 import { checkAuth } from "../Utils/Jwt_Token.js";
-import { showInterestValidation } from '../Validations/ShiftApplicationValidation.js';
+import { showInterestValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation } from '../Validations/ShiftApplicationValidation.js';
 const shiftApplicantRouter = express.Router();
 import validateRequest from "../Utils/Vlaidations.js"
 
@@ -87,7 +87,7 @@ shiftApplicantRouter.post("/showInterest", checkAuth,validateRequest(showInteres
  *       500:
  *         description: Internal server error.
  */
-shiftApplicantRouter.post("/action", checkAuth,actionController);
+shiftApplicantRouter.post("/action", checkAuth,validateRequest(shiftApplicationActionValidation),actionController);
 
 
 /**
@@ -116,7 +116,7 @@ shiftApplicantRouter.post("/action", checkAuth,actionController);
  *       500:
  *         description: Internal server error.
  */
-shiftApplicantRouter.post("/getById", checkAuth,getApplicantsController);
+shiftApplicantRouter.post("/getById", checkAuth,validateRequest(getShiftApplicationValidation),getApplicantsController);
 
 
 /**
@@ -145,7 +145,7 @@ shiftApplicantRouter.post("/getById", checkAuth,getApplicantsController);
  *       500:
  *         description: Internal server error.
  */
-shiftApplicantRouter.post("/punchTime", checkAuth,punchTimeController);
+shiftApplicantRouter.post("/punchTime", checkAuth,validateRequest(punchTimeValidation),punchTimeController);
 
 export default shiftApplicantRouter;
 

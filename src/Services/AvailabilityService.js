@@ -7,7 +7,7 @@ const createAvailabilityService = async (availabilityData) => {
 
 const getAvailabilityService = async (availabilityData) => {
     const query = { "userId": availabilityData.userId };
-    var response = await avaialabilitySchema.find(query);
+    var response = await AvailabilityModel.find(query);
     return response;
 };
 

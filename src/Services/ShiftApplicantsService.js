@@ -125,7 +125,7 @@ const showInterestService = async (applicationData) => {
 };
 
 
-const actionService = async (actionData) => {
+const actionService = async (res,actionData) => {
     const { sId, status, userId, hospitalName, shiftDate } = actionData;
     const response = await ShiftApplicants.findByIdAndUpdate(
         sId,

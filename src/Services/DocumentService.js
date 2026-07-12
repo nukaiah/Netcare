@@ -1,5 +1,5 @@
 import DocumentsModel from "../Models/DocumentsModel.js";
-import { documentRejectedTemplate } from "../Utils/EmailotpTemplate.js";
+import { documentStatusTemplate } from "../Utils/EmailotpTemplate.js";
 import { createDocumentActivityService } from "./DocumentActivityService.js";
 import mongoose from "mongoose";
 import { uploadFile, deleteFile } from "../Utils/UploadFile.js";
@@ -82,14 +82,17 @@ const verifyDocumentService = async (verificationData) => {
     if (!response) {
         return "Not Found";
     }
-    if (verificationStatus === "Rejected") {
-        const template = documentRejectedTemplate(facilityName, updateData.documentName, updateData.rejectionReason);
-        await sendEmail(email, template.subject, template.html);
-    }
-    if (verificationStatus === "Verified") {
-        const template = documentRejectedTemplate(facilityName, updateData.documentName, updateData.rejectionReason);
-        await sendEmail(email, template.subject, template.html);
-    }
+    console.log(verificationStatus);
+    const template = documentStatusTemplate(facilityName, documentName, verificationStatus,rejectionReason);
+    await sendEmail(email, template.subject, template.html);
+    // if (verificationStatus === "Rejected") {
+    //     const template = documentStatusTemplate(facilityName, updateData.documentName, verificationStatus,updateData.rejectionReason);
+    //     await sendEmail(email, template.subject, template.html);
+    // }
+    // if (verificationStatus === "Verified") {
+    //     const template = documentStatusTemplate(facilityName, updateData.documentName, verificationStatus,updateData.rejectionReason);
+    //     await sendEmail(email, template.subject, template.html);
+    // }
     return response;
 };
 

@@ -295,95 +295,129 @@ const onboardingTemplate = (
   };
 };
 
-const documentRejectedTemplate = (
+const documentStatusTemplate = (
   facilityName,
   documentName,
-  rejectionReason
+  status,
+  rejectionReason = ""
 ) => {
+
+  const isApproved = status === "Verified";
+
+  const config = {
+    title: isApproved ? "Document Approved" : "Document Rejected",
+    subject: `${isApproved ? "Document Approved" : "Document Rejected"} – ${documentName}`,
+    headerColor: isApproved ? "#16a34a" : "#dc2626",
+    cardColor: isApproved ? "#ecfdf5" : "#fdecea",
+    statusColor: isApproved ? "#16a34a" : "#dc2626",
+    message: isApproved
+      ? "Congratulations! Your submitted document has been reviewed and approved successfully."
+      : "We reviewed your submitted document and unfortunately it could not be approved."
+  };
+
   return {
-    subject: `Document Rejected – ${documentName}`,
+    subject: config.subject,
     html: `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Document Rejected</title>
+<title>${config.title}</title>
 </head>
 
-<body style="margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, Helvetica, sans-serif;">
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
 
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px 10px;">
-  <tr>
-    <td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;background:#f4f6f8;">
+<tr>
+<td align="center">
 
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px; background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.06);">
-        
-        <!-- Header -->
-        <tr>
-          <td align="center" style="background-color:#2c3e50; padding:28px 20px;">
-            <h2 style="margin:0; color:#ffffff; font-size:20px; font-weight:600;">
-              Document Rejected
-            </h2>
-          </td>
-        </tr>
+<table width="100%" cellpadding="0" cellspacing="0"
+style="max-width:620px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.08);">
 
-        <!-- Body -->
-        <tr>
-          <td style="padding:35px 25px;">
+<tr>
+<td align="center" style="background:${config.headerColor};padding:28px;">
+<h2 style="margin:0;color:#fff;font-size:22px;">
+${config.title}
+</h2>
+</td>
+</tr>
 
-            <p style="font-size:15px; color:#333; margin-top:0;">
-              Hello ${facilityName},
-            </p>
+<tr>
+<td style="padding:35px 28px;">
 
-            <p style="font-size:14px; color:#555; line-height:1.6;">
-              We reviewed your submitted document and unfortunately it could not be approved.
-            </p>
+<p style="font-size:15px;color:#333;">
+Hello ${facilityName},
+</p>
 
-            <!-- Details -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin:25px 0; background:#fdecea; border-radius:6px;">
-              <tr>
-                <td style="padding:18px;">
+<p style="font-size:14px;color:#555;line-height:1.7;">
+${config.message}
+</p>
 
-                  <p style="margin:0; font-size:14px; color:#333;">
-                    <strong>Document Name:</strong><br/>
-                    ${documentName}
-                  </p>
+<table width="100%" cellpadding="0" cellspacing="0"
+style="margin:25px 0;background:${config.cardColor};border-radius:8px;">
+<tr>
+<td style="padding:20px;">
 
-                  <p style="margin-top:15px; font-size:14px; color:#333;">
-                    <strong>Reason for Rejection:</strong><br/>
-                    ${rejectionReason}
-                  </p>
+<p style="margin:0;font-size:14px;">
+<strong>Document:</strong><br/>
+${documentName}
+</p>
 
-                </td>
-              </tr>
-            </table>
+<p style="margin-top:16px;font-size:14px;">
+<strong>Status:</strong><br/>
+<span style="font-weight:bold;color:${config.statusColor};">
+${status}
+</span>
+</p>
 
-            <p style="font-size:14px; color:#555; line-height:1.6;">
-              Please review the above reason and upload the corrected document from your dashboard.
-            </p>
+${!isApproved
+        ? `
+<p style="margin-top:16px;font-size:14px;">
+<strong>Reason for Rejection:</strong><br/>
+${rejectionReason}
+</p>
+`
+        : ""
+      }
 
-            <p style="font-size:14px; color:#333; margin-top:25px;">
-              Regards,<br/>
-              <strong>ShiftMatch Support Team</strong>
-            </p>
+</td>
+</tr>
+</table>
 
-          </td>
-        </tr>
+${isApproved
+        ? `
+<p style="font-size:14px;color:#555;line-height:1.7;">
+Your document is now verified and no further action is required.
+</p>
+`
+        : `
+<p style="font-size:14px;color:#555;line-height:1.7;">
+Please review the reason above, update your document, and upload it again from your dashboard.
+</p>
+`
+      }
 
-        <!-- Footer -->
-        <tr>
-          <td align="center" style="background:#f1f3f6; padding:16px;">
-            <p style="font-size:12px; color:#888; margin:0;">
-              This is an automated message. Please do not reply to this email.
-            </p>
-          </td>
-        </tr>
+<p style="margin-top:30px;font-size:14px;color:#333;">
+Regards,<br/>
+<strong>ShiftMatch Support Team</strong>
+</p>
 
-      </table>
+</td>
+</tr>
 
-    </td>
-  </tr>
+<tr>
+<td align="center" style="background:#f5f5f5;padding:18px;">
+<p style="margin:0;font-size:12px;color:#777;">
+This is an automated email. Please do not reply to this message.
+</p>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
 </table>
 
 </body>
@@ -451,4 +485,4 @@ const forgotPasswordOtpTemplate = (otp, userName = "User") => {
   };
 };
 
-export { otpTemplate, verificationStatusTemplate, onboardingTemplate, documentRejectedTemplate, forgotPasswordOtpTemplate };
+export { otpTemplate, verificationStatusTemplate, onboardingTemplate, documentStatusTemplate, forgotPasswordOtpTemplate };
