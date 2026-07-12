@@ -8,12 +8,15 @@ const genarateEmailMobileOtpValidation = Joi.object({
         "string.base": "Email must be a string",
         "string.email": "Email must be a valid email address"
     }),
-    mobileNumber: Joi.string().pattern(/^\d{10}$/).required().messages({
-        "any.required": "Mobile number is required",
-        "string.empty": "Mobile number cannot be empty",
-        "string.base": "Mobile number must be a string of digits",
-        "string.pattern.base": "Mobile number must be exactly 10 digits"
-    })
+    mobileNumber: Joi.string()
+        .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
+        .required()
+        .messages({
+            "any.required": "Mobile number is required",
+            "string.empty": "Mobile number cannot be empty",
+            "string.base": "Mobile number must be a string",
+            "string.pattern.base": "Enter a valid South African mobile number"
+        })
 });
 
 
@@ -48,12 +51,13 @@ const verifyOtpValidation = Joi.object({
             }),
 
         otherwise: Joi.string()
-            .pattern(/^[6-9][0-9]{9}$/)
+            .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
             .required()
             .messages({
                 "any.required": "Mobile number is required",
                 "string.empty": "Mobile number cannot be empty",
-                "string.pattern.base": "Mobile number must be a valid 10-digit number",
+                "string.base": "Mobile number must be a string",
+                "string.pattern.base": "Enter a valid South African mobile number"
             })
     }),
 
@@ -98,15 +102,16 @@ const resendOtpValidatiion = Joi.object({
             }),
 
         otherwise: Joi.string()
-            .pattern(/^[6-9][0-9]{9}$/)
+            .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
             .required()
             .messages({
                 "any.required": "Mobile number is required",
                 "string.empty": "Mobile number cannot be empty",
-                "string.pattern.base": "Mobile number must be a valid 10-digit number",
+                "string.base": "Mobile number must be a string",
+                "string.pattern.base": "Enter a valid South African mobile number"
             })
     })
 });
 
 
-export { genarateEmailMobileOtpValidation, verifyOtpValidation,resendOtpValidatiion };
+export { genarateEmailMobileOtpValidation, verifyOtpValidation, resendOtpValidatiion };
