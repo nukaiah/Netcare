@@ -89,7 +89,7 @@ const { swagger: DocumentUploadRequest } = j2s(DocumentUplodaValidation);
 const { swagger: VerifyDocumentRequest } = j2s(DocumentUpdateValidation);
 
 /* Shifts */
-import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation ,getAllMobileValidation,getMyShiftsValidation} from "./src/Validations/ShiftPostValidation.js"
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation, getMyShiftsValidation } from "./src/Validations/ShiftPostValidation.js"
 const { swagger: ShiftPostSchema } = j2s(ShiftPostValidation);
 const { swagger: GetWebShiftsSchema } = j2s(getWebShiftsValidation);
 const { swagger: UpdateShiftStatusSchema } = j2s(updateShiftStatusValidation);
@@ -111,8 +111,13 @@ const { swagger: CreateAvailabilityRequest } = j2s(createAvailabilityValidation)
 /* Avaialability */
 import { createReviewValidation } from './src/Validations/ReviewValidations.js';
 const { swagger: CreateReviewRequest } = j2s(createReviewValidation);
-                
 
+/* ShiftApplicartion */
+import { showInterestValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation } from './src/Validations/ShiftApplicationValidation.js';
+const { swagger: ShowInterestRequest } = j2s(showInterestValidation);
+const { swagger: ShiftApplicationActionRequest } = j2s(shiftApplicationActionValidation);
+const { swagger: GetApplicantsRequest } = j2s(getShiftApplicationValidation);
+const { swagger: PunchTimeRequest } = j2s(punchTimeValidation);
 
 
 const options = {
@@ -216,7 +221,15 @@ const options = {
                 CreateAvailabilityRequest,
 
                 /* Review */
-                CreateReviewRequest
+                CreateReviewRequest,
+
+
+
+                /* ShiftApplicartion */
+                ShowInterestRequest,
+                ShiftApplicationActionRequest,
+                GetApplicantsRequest,
+                PunchTimeRequest
 
             },
 
