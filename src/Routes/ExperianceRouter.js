@@ -1,22 +1,3 @@
-// import express from 'express';
-// const experianceRouter = express.Router();
-
-// import validateRequest from '../Utils/Vlaidations.js';
-// import { ExperianceValidation, updateExperianceValidation } from '../Validations/ExperianceValidation.js';
-// import { createExperianceController, deleteExperianceController, updateExperianceController,updateExperianceFileController,deleteExperianceFileController } from '../Controllers/ExperianceController.js';
-// import { createUpload } from '../Utils/UploadFile.js';
-// const uploadExperiance = createUpload("experiances");
-// import getByIdValidation from "../Validations/GetByIdValidation.js";
-
-// experianceRouter.post("/create/:userId", uploadExperiance.single('file'), validateRequest(ExperianceValidation), createExperianceController);
-// experianceRouter.patch("/updateFile/:userId", uploadExperiance.single('file'),validateRequest(getByIdValidation), updateExperianceFileController);
-// experianceRouter.put("/update", validateRequest(updateExperianceValidation), updateExperianceController);
-// experianceRouter.delete("/delete", validateRequest(getByIdValidation), deleteExperianceController);
-// experianceRouter.patch("/deleteFile", validateRequest(getByIdValidation), deleteExperianceFileController);
-
-// export default experianceRouter;
-
-
 
 import express from 'express';
 const experianceRouter = express.Router();
@@ -25,7 +6,7 @@ import validateRequest from '../Utils/Vlaidations.js';
 import { ExperianceValidation, updateExperianceValidation } from '../Validations/ExperianceValidation.js';
 import {createExperianceController,deleteExperianceController,updateExperianceController,updateExperianceFileController,deleteExperianceFileController} from '../Controllers/ExperianceController.js';
 import { createUpload } from '../Utils/UploadFile.js';
-const uploadExperiance = createUpload("experiances");
+const uploadExperiance = createUpload();
 import getByIdValidation from "../Validations/GetByIdValidation.js";
 import { checkAuth } from '../Utils/Jwt_Token.js';
 
@@ -40,17 +21,69 @@ import { checkAuth } from '../Utils/Jwt_Token.js';
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     CreateExperienceRequest:
+ *       type: object
+ *       required:
+ *         - hospitalName
+ *         - designation
+ *         - department
+ *         - employmentType
+ *         - startDate
+ *         - isCurrentlyWorking
+ *         - file
+ *       properties:
+ *         hospitalName:
+ *           type: string
+ *           example: NetCare Hospital
+ *         designation:
+ *           type: string
+ *           example: Registered Nurse
+ *         department:
+ *           type: string
+ *           example: ICU
+ *         employmentType:
+ *           type: string
+ *           enum:
+ *             - Full Time
+ *             - Part Time
+ *             - Contract
+ *             - Locum
+ *           example: Full Time
+ *         startDate:
+ *           type: string
+ *           format: date
+ *           example: "2022-01-15"
+ *         endDate:
+ *           type: string
+ *           format: date
+ *           nullable: true
+ *           example: "2024-06-30"
+ *           description: Required only when isCurrentlyWorking is false.
+ *         isCurrentlyWorking:
+ *           type: boolean
+ *           example: false
+ *         file:
+ *           type: string
+ *           format: binary
+ */
+
+/**
+ * @swagger
  * /api/experience/create/{userId}:
  *   post:
- *     tags: [Experience]
+ *     tags:
+ *       - Experience
  *     summary: Create experience
- *     description: Creates a new work experience with supporting document.
+ *     description: Creates a new work experience with a supporting document upload.
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
+ *         description: User ID
  *         schema:
  *           type: string
  *         example: 6865f8d9c4b3f1a2b4567890
@@ -63,6 +96,12 @@ import { checkAuth } from '../Utils/Jwt_Token.js';
  *     responses:
  *       201:
  *         description: Experience created successfully.
+ *       400:
+ *         description: Validation error.
+ *       401:
+ *         description: Unauthorized.
+ *       500:
+ *         description: Internal server error.
  */
 experianceRouter.post("/create/:userId",checkAuth,uploadExperiance.single("file"),validateRequest(ExperianceValidation),createExperianceController);
 

@@ -11,7 +11,7 @@ const createExperianceController = async (req, res, next) => {
         if (!file) {
             return notFoundResponse(res, "File is not found");
         }
-        const fileData = { documentUrl: req.file.filename };
+        const fileData = { documentUrl: req.file };
         const experianceData = req.body || {};
         const finalData = { ...experianceData, ...fileData };
         const response = await createExperianceService(finalData);

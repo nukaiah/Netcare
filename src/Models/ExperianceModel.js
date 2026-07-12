@@ -10,49 +10,59 @@ const experienceSchema = new mongoose.Schema(
         hospitalName: {
             type: String,
             required: true,
-            trim:true
+            trim: true
         },
 
         designation: {
             type: String,
             required: true,
-            trim:true
+            trim: true
         },
 
         department: {
             type: String,
             required: true,
-            trim:true
+            trim: true
         },
 
         employmentType: {
             type: String,
             required: true,
             enum: ["Full Time", "Part Time", "Contract", "Locum"],
-            trim:true
+            trim: true
         },
 
         startDate: {
             type: Date,
             required: true,
-            trim:true
+            trim: true
         },
 
         endDate: {
             type: Date,
-            trim:true,
+            trim: true,
             default: null
         },
 
         isCurrentlyWorking: {
             type: Boolean,
-            required:true,
+            required: true,
             default: false
         },
 
         documentUrl: {
-            type: String,
-            default: null,
+            url: {
+                type: String,
+                default: null,
+            },
+            publicId: {
+                type: String,
+                default: null,
+            },
+            resourceType: {
+                type: String,
+                default: null,
+            },
         },
         description: {
             type: String,

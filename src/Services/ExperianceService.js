@@ -1,10 +1,40 @@
 import ExperianceModel from "../Models/ExperianceModel.js";
-import { deleteFile } from "../Utils/UploadFile.js";
+import { uploadFile,deleteFile } from "../Utils/UploadFile.js";
 
 
 const createExperianceService = async (experianceData) => {
-    const response = await ExperianceModel.create(experianceData);
-    return response;
+    console.log(experianceData);
+    const { userId, documentUrl } = experianceData;
+
+    let fileResponse = null;
+
+    try {
+        fileResponse = await uploadFile(documentUrl, "experiances",userId);
+
+        delete experianceData.documentUrl;
+
+        const finalData = {
+            ...experianceData,
+            documentUrl: {
+                url: fileResponse.secure_url,
+                publicId: fileResponse.public_id,
+                resourceType: fileResponse.resource_type,
+            }
+        };
+
+        const response = await ExperianceModel.create(finalData);
+
+        return response;
+
+    } catch (error) {
+        if (fileResponse?.public_id) {
+            await deleteFile(
+                fileResponse.public_id,
+                fileResponse.resource_type
+            );
+        }
+        throw error;
+    }
 };
 
 
@@ -56,23 +86,15 @@ const deleteExperianceService = async (id) => {
 
 
 const deleteExperianceFileService = async (id) => {
-    const response = await ExperianceModel.findByIdAndUpdate(id, { $set: { documentUrl: null } }, { runValidators: true, new: false });
+    const response = await ExperianceModel.findById(id);
     if (!response) {
-        return null;
+        return "Not found";
     }
-    if (response.documentUrl) {
-        const userId = response.userId;
-        const filename = response.documentUrl;
-        const filePath = `uploads/experiances/${userId}/${filename}`;
-        try {
-            await deleteFile(filePath);
-        } catch (error) {
-
-        }
-    }
+    await deleteFile(response.documentUrl.publicId,response.documentUrl.resourceType);
+    response.documentUrl = "";
+    await response.save();
     return response;
 };
-
 
 
 
