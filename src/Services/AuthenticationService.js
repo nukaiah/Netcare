@@ -54,30 +54,20 @@ const forgotPasswordService = async (emailData) => {
     }
 
     await OTPModel.deleteMany({ emailMobile: email, type: "ForgotPassword", isUsed: false });
-
     const otp = generateOtp();
+    console.log(otp);
     const otpData = {
         type: "ForgotPassword",
         mode: "Email",
         emailMobile: email,
         otp: otp,
-        expireDate: new Date(Date.now() + 10 * 60 * 1000),
+        expireDate: new Date(Date.now() + 5 * 60 * 1000),
     };
-
-    await OTPModel.create(otpData);
-    console.log(otp);
-
+    const isOtpCreated = await OTPModel.create(otpData);
     const template = forgotPasswordOtpTemplate(otp, response.fullName);
     const emailResponse = await sendEmail(email, template.subject, template.html);
-
-    if (emailResponse === "error") {
-        return "Email Failed";
-    }
-
     return response;
 };
-
-
 
 const resetPassworService = async (resetPasswordData) => {
     const { email, password } = resetPasswordData || {};
@@ -109,8 +99,8 @@ const inserMutipleUsersService = async (userData) => {
 };
 
 const getAllUsersService = async () => {
-    const response = await userModel.find({roleId:2}).collation({ locale: "en", strength: 2 }).sort({ fullName: 1 }).lean();
+    const response = await userModel.find({ roleId: 2 }).collation({ locale: "en", strength: 2 }).sort({ fullName: 1 }).lean();
     return response;
 };
 
-export { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService,inserMutipleUsersService,getAllUsersService};
+export { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService, inserMutipleUsersService, getAllUsersService };

@@ -1,4 +1,4 @@
-import { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService, inserMutipleUsersService,getAllUsersService } from "../Services/AuthenticationService.js";
+import { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService, inserMutipleUsersService, getAllUsersService } from "../Services/AuthenticationService.js";
 import { conflictResponse, createResponse, notFoundResponse, successResponse } from "../Utils/Response.js";
 
 
@@ -23,8 +23,8 @@ const loginController = async (req, res, next) => {
         if (response === "Not Found") {
             return notFoundResponse(res, "We couldn't find an account with this email");
         }
-        if(response==="Account Suspended/Inactive"){
-            return conflictResponse(res,"Your acoount is Suspended/Inactive.Please contact admin.");
+        if (response === "Account Suspended/Inactive") {
+            return conflictResponse(res, "Your acoount is Suspended/Inactive.Please contact admin.");
         }
         if (response === "Password Incorrect") {
             return conflictResponse(res, "Invalid email or password");
@@ -42,10 +42,6 @@ const forgotPasswordController = async (req, res, next) => {
         if (response === "Not Found") {
             return notFoundResponse(res, "We couldn't find an account with this email");
         }
-        if (response === "Email Failed") {
-            return conflictResponse(res, null, "Failed to send OTP. Please try again");
-        }
-
         return createResponse(res, null, "Please check your email for the OTP to reset your password");
     } catch (error) {
         return next(error);
@@ -103,4 +99,4 @@ const getAllUsersController = async (req, res, next) => {
     }
 }
 
-export { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController,inserMultipleController,getAllUsersController};
+export { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController, inserMultipleController, getAllUsersController };

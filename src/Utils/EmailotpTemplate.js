@@ -35,7 +35,7 @@ const otpTemplate = (otp, userName = "User") => {
         </div>
 
         <p style="font-size: 14px; color: #555;">
-          ⏳ This OTP is valid for <strong>10 minutes</strong>.
+          ⏳ This OTP is valid for <strong>5 minutes</strong>.
         </p>
 
         <p style="font-size: 14px; color: #e74c3c;">
@@ -461,7 +461,7 @@ const forgotPasswordOtpTemplate = (otp, userName = "User") => {
         </div>
 
         <p style="font-size: 14px; color: #555;">
-          This OTP is valid for <strong>10 minutes</strong>.
+          This OTP is valid for <strong>5 minutes</strong>.
         </p>
 
         <p style="font-size: 14px; color: #c0392b;">
