@@ -61,22 +61,22 @@ const loginValidationSchema = Joi.object({
     }),
 });
 
-const forgotPasswordValidation = Joi.object({   
+const forgotPasswordValidation = Joi.object({
     email: Joi.string().email({ tlds: { allow: false } }).required().messages({
         "any.required": "Email is required",
         "string.empty": "Email cannot be empty",
         "string.base": "Email must be a string",
         "string.email": "Email must be a valid email address"
-    }), 
+    }),
 });
 
 const resetPasswordValidation = Joi.object({
-   email: Joi.string().email({ tlds: { allow: false } }).required().messages({
+    email: Joi.string().email({ tlds: { allow: false } }).required().messages({
         "any.required": "Email is required",
         "string.empty": "Email cannot be empty",
         "string.base": "Email must be a string",
         "string.email": "Email must be a valid email address"
-    }), 
+    }),
     password: Joi.string().min(8).pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).+$")).required().messages({
         "any.required": "Password is required",
         "string.empty": "Password cannot be empty",
@@ -107,4 +107,4 @@ const updatePasswordValidation = Joi.object({
 
 
 
-export { registerValidationSchema,loginValidationSchema,forgotPasswordValidation,resetPasswordValidation,updatePasswordValidation};
+export { registerValidationSchema, loginValidationSchema, forgotPasswordValidation, resetPasswordValidation, updatePasswordValidation };

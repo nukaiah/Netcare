@@ -1,24 +1,29 @@
 import Joi from "joi";
 
+const southAfricanMobileValidation = Joi.string()
+    .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
+    .required()
+    .messages({
+        "any.required": "Mobile number is required",
+        "string.empty": "Mobile number cannot be empty",
+        "string.base": "Mobile number must be a string",
+        "string.pattern.base": "Enter a valid South African mobile number (e.g. 0821234567 or +27821234567)"
+    });
 
-const genarateEmailMobileOtpValidation = Joi.object({
-    email: Joi.string().email().required().messages({
+const emailValidation = Joi.string()
+    .email()
+    .required()
+    .messages({
         "any.required": "Email is required",
         "string.empty": "Email cannot be empty",
         "string.base": "Email must be a string",
         "string.email": "Email must be a valid email address"
-    }),
-    mobileNumber: Joi.string()
-        .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
-        .required()
-        .messages({
-            "any.required": "Mobile number is required",
-            "string.empty": "Mobile number cannot be empty",
-            "string.base": "Mobile number must be a string",
-            "string.pattern.base": "Enter a valid South African mobile number"
-        })
-});
+    });
 
+const genarateEmailMobileOtpValidation = Joi.object({
+    email: emailValidation,
+    mobileNumber: southAfricanMobileValidation
+});
 
 const verifyOtpValidation = Joi.object({
     type: Joi.string()
@@ -41,24 +46,8 @@ const verifyOtpValidation = Joi.object({
 
     emailMobile: Joi.when("mode", {
         is: "Email",
-        then: Joi.string()
-            .email()
-            .required()
-            .messages({
-                "any.required": "Email is required",
-                "string.empty": "Email cannot be empty",
-                "string.email": "Invalid email format",
-            }),
-
-        otherwise: Joi.string()
-            .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
-            .required()
-            .messages({
-                "any.required": "Mobile number is required",
-                "string.empty": "Mobile number cannot be empty",
-                "string.base": "Mobile number must be a string",
-                "string.pattern.base": "Enter a valid South African mobile number"
-            })
+        then: emailValidation,
+        otherwise: southAfricanMobileValidation
     }),
 
     otp: Joi.string()
@@ -67,8 +56,8 @@ const verifyOtpValidation = Joi.object({
         .messages({
             "any.required": "OTP is required",
             "string.empty": "OTP cannot be empty",
-            "string.pattern.base": "OTP must be exactly 6 digits",
-        }),
+            "string.pattern.base": "OTP must be exactly 6 digits"
+        })
 });
 
 const resendOtpValidatiion = Joi.object({
@@ -92,26 +81,13 @@ const resendOtpValidatiion = Joi.object({
 
     emailMobile: Joi.when("mode", {
         is: "Email",
-        then: Joi.string()
-            .email()
-            .required()
-            .messages({
-                "any.required": "Email is required",
-                "string.empty": "Email cannot be empty",
-                "string.email": "Invalid email format",
-            }),
-
-        otherwise: Joi.string()
-            .pattern(/^(\+27|27|0)[6-8][0-9]{8}$/)
-            .required()
-            .messages({
-                "any.required": "Mobile number is required",
-                "string.empty": "Mobile number cannot be empty",
-                "string.base": "Mobile number must be a string",
-                "string.pattern.base": "Enter a valid South African mobile number"
-            })
+        then: emailValidation,
+        otherwise: southAfricanMobileValidation
     })
 });
 
-
-export { genarateEmailMobileOtpValidation, verifyOtpValidation, resendOtpValidatiion };
+export {
+    genarateEmailMobileOtpValidation,
+    verifyOtpValidation,
+    resendOtpValidatiion
+};

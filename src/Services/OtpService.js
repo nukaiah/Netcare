@@ -16,25 +16,24 @@ const saveOtpService = async (otpData) => {
             { emailMobile: mobileNumber, type: "Register", isUsed: false }
         ]
     });
-    const emailOtp = generateOtp();
-    console.log(emailOtp);
+    const emailOtp = await generateOtp();
     const mobileOtp = "123456";
+    console.log(emailOtp);
+    console.log(mobileOtp);
     const emailData = {
         type: "Register",
         mode: "Email",
         emailMobile: email,
         otp: emailOtp.toString(),
-        expireDate: new Date(Date.now() + 10 * 60 * 1000),
+        expireDate: new Date(Date.now() + 5 * 60 * 1000),
     };
     const mobileData = {
         type: "Register",
         mode: "Mobile",
         emailMobile: mobileNumber,
         otp: mobileOtp,
-        expireDate: new Date(Date.now() + 10 * 60 * 1000),
+        expireDate: new Date(Date.now() + 5 * 60 * 1000),
     };
-
-
     const data = [emailData, mobileData];
     const response = await OtpModel.insertMany(data);
     const template = otpTemplate(emailOtp, email);

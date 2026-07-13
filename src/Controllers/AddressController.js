@@ -10,7 +10,6 @@ const createAddressController = async (req, res, next) => {
         if(error.code===11000){
             return conflictResponse(res,"Address alreay existed");
         }
-        
         return next(error);
     }
 };
