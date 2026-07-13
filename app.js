@@ -29,12 +29,8 @@ app.use("/uploads", express.static("uploads"));
 
 
 
+;
 
-import healthcareworkerRouter from './MVC/Controllers/HealtCareWorkerController.js';
-// import shiftpostRouter from './MVC/Controllers/ShiftPostController.js';
-// import shiftApplicationRouter from './MVC/Controllers/ShiftApplicationController.js';
-
-app.use('/api/healthCareWorker', healthcareworkerRouter);
 
 
 

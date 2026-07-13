@@ -5,6 +5,10 @@ const createReviewValidation = Joi.object({
         "any.required": "Shift id is required",
         "string.empty": "Shift id cannot be empty",
     }),
+    shiftApplicationId: Joi.string().required().messages({
+        "any.required": "Shift application id is required",
+        "string.empty": "Shift application id cannot be empty",
+    }),
 
     reviewerId: Joi.string().required().messages({
         "any.required": "Reviewer id is required",
@@ -34,7 +38,11 @@ const createReviewValidation = Joi.object({
         "number.integer": "Rating must be an integer",
         "number.min": "Rating must be at least 1",
         "number.max": "Rating cannot be greater than 5"
-    })
+    }),
+    message: Joi.string().required().messages({
+        "any.required": "Message is required",
+        "string.empty": "Message cannot be empty"
+    }),
 });
 
 export { createReviewValidation };

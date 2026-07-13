@@ -5,6 +5,10 @@ const reviewSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },
+  shiftApplicationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
   reviewerId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
@@ -29,6 +33,10 @@ const reviewSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
+  message:{
+    type: String,
+    required:true,
+  }
 
 }, { timestamps: true, versionKey: false });
 

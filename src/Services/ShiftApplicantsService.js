@@ -108,7 +108,7 @@ const GetHopitalShiftApplicantsService = async () => {
 };
 
 
-const showInterestService = async (applicationData) => {
+const showInterestService = async (applicationData) => {    
     const { hospitalId, ...data } = applicationData;
     const hospitalData = await UserModels.findById(hospitalId);
     const response = await ShiftApplicants.create(data);
@@ -164,7 +164,7 @@ const actionService = async (res,actionData) => {
 
 
 const getApplicantsService = async (shiftId) => {
-    const response = await shiftApplicationSchema.aggregate([
+    const response = await ShiftApplicants.aggregate([
         {
             $match: {
                 shiftId: new mongoose.Types.ObjectId(shiftId)
@@ -206,7 +206,8 @@ const getApplicantsService = async (shiftId) => {
 };
 
 
-const punchTimeService = async ({ id, type, workerId }) => {
+const punchTimeService = async (res,punchData) => {
+    const {sId, type, workerId} = punchData
 
     let update = {};
 
@@ -225,7 +226,7 @@ const punchTimeService = async ({ id, type, workerId }) => {
     }
 
     const response = await ShiftApplicants.findByIdAndUpdate(
-        id,
+        sId,
         {
             $set: update
         },
@@ -236,6 +237,7 @@ const punchTimeService = async ({ id, type, workerId }) => {
     );
 
     const userData = await UserModels.findById(workerId);
+    console.log(userData);
     if (type === "PunchIn") {
         await sendBulkNotification(res, userData.fcm, "Shift Punch-In Alert", `${userData.fullName} has punched in and started the scheduled shift.`);
     }

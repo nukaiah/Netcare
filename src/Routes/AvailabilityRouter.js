@@ -1,6 +1,6 @@
 import { createAvailabilityController, getAvailabilityController } from "../Controllers/AvailabilityController.js";
 import express from 'express';
-import { checkAuth } from "../../MVC/MiddleWares/CheckAuth.js";
+import { checkAuth } from "../Utils/Jwt_Token.js";
 import validateRequest from "../Utils/Vlaidations.js";
 import { createAvailabilityValidation } from "../Validations/AvaialbilityValidation.js";
 import getByUserIdValidation from "../Validations/GetByUserIdValidation.js";

@@ -31,7 +31,8 @@ const actionController = async (req, res, next) => {
 
 const getApplicantsController = async (req, res, next) => {
     try {
-        const result = await GetHopitalShiftApplicantsService();
+        const {shiftId} = req.body||{};
+        const result = await getApplicantsService(shiftId);
         return successResponse(res, result, "Applicants found");
     } catch (error) {
         return next(error);
@@ -40,7 +41,8 @@ const getApplicantsController = async (req, res, next) => {
 
 const punchTimeController = async (req, res, next) => {
     try {
-        const result = await GetHopitalShiftApplicantsService();
+        const punchData = req.body||{};
+        const result = await punchTimeService(res,punchData);
         return successResponse(res, result, "Applicants found");
     } catch (error) {
         return next(error);
