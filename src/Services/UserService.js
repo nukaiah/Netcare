@@ -220,8 +220,10 @@ const userDataUpdateService = async (userData) => {
 };
 
 const updateProfileService = async (fileData) => {
+    console.log(fileData);
     const { id, imageUrl } = fileData || {};
     const fileResponse = await uploadFile(imageUrl, "profile", id);
+    console.log(fileResponse);
     if (fileResponse) {
         const imageData = {
             url: fileResponse.secure_url,
@@ -275,7 +277,8 @@ const updateFcmService = async (fcmData) => {
 };
 
 const getAllUsersService = async (paginatedData) => {
-    const { roleId, skip, limit } = paginatedData || {}
+    const { roleId, page, limit } = paginatedData || {}
+    const skip = (page - 1) * limit;
     const [data, totalCount] = await Promise.all([
         UserModels.find({ roleId: roleId })
             .sort({ createdAt: -1 })

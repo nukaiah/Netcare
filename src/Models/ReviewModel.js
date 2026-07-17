@@ -34,8 +34,7 @@ const reviewSchema = new mongoose.Schema({
     max: 5,
   },
   message:{
-    type: String,
-    required:true,
+    type: String
   }
 
 }, { timestamps: true, versionKey: false });

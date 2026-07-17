@@ -5,6 +5,7 @@ const createReviewValidation = Joi.object({
         "any.required": "Shift id is required",
         "string.empty": "Shift id cannot be empty",
     }),
+
     shiftApplicationId: Joi.string().required().messages({
         "any.required": "Shift application id is required",
         "string.empty": "Shift application id cannot be empty",
@@ -39,9 +40,24 @@ const createReviewValidation = Joi.object({
         "number.min": "Rating must be at least 1",
         "number.max": "Rating cannot be greater than 5"
     }),
-    message: Joi.string().required().messages({
-        "any.required": "Message is required",
-        "string.empty": "Message cannot be empty"
+
+    incidentTypes: Joi.when("rating", {
+        is: Joi.number().less(3),
+        then: Joi.array()
+            .items(Joi.string().trim().required())
+            .min(1)
+            .required()
+            .messages({
+                "any.required": "Incident type is required for ratings below 3.",
+                "array.base": "Incident types must be an array.",
+                "array.min": "Please select at least one incident type."
+            }),
+        otherwise: Joi.array()
+            .items(Joi.string().trim())
+            .optional()
+    }),
+    message: Joi.string().trim().optional().allow("").messages({
+        "string.base": "Message must be a string"
     }),
 });
 

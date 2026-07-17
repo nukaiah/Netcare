@@ -12,12 +12,14 @@ const GetHopitalShiftApplicantsController = async (req, res, next) => {
 
 const showInterestController = async (req, res, next) => {
     try {
-        const result = await GetHopitalShiftApplicantsService();
+        const applicationData = req.body||{};
+        const result = await showInterestService(res,applicationData);
         return successResponse(res, result, "Applicants found");
     } catch (error) {
         return next(error);
     }
 };
+
 
 const actionController = async (req, res, next) => {
     try {
@@ -29,6 +31,7 @@ const actionController = async (req, res, next) => {
     }
 };
 
+
 const getApplicantsController = async (req, res, next) => {
     try {
         const {shiftId} = req.body||{};
@@ -38,6 +41,7 @@ const getApplicantsController = async (req, res, next) => {
         return next(error);
     }
 };
+
 
 const punchTimeController = async (req, res, next) => {
     try {

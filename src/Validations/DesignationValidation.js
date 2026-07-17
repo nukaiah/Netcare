@@ -5,7 +5,12 @@ const designationValidation = Joi.object({
         "any.required": "Designation name is required",
         "string.empty": "Designation name cannot be empty",
         "string.base": "Designation name must be a string",
-    })
+    }),
+    status: Joi.string().valid("Active", "Inactive").required().messages({
+        "any.required": "Status name is required",
+        "string.empty": "Status name cannot be empty",
+        "any.only": "Status name is not valid"
+    }), 
 });
 
 const updateDesignationValidation = Joi.object({

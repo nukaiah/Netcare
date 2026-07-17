@@ -64,6 +64,8 @@ import documentActivityRouter from './src/Routes/DocumentActivityRouter.js';
 import preferenceRouter from './src/Routes/PrefernceRouter.js';
 import availabilityRouter from './src/Routes/AvailabilityRouter.js';
 import reviewRouter from './src/Routes/ReviewRouter.js';
+import groupDcoumentRouter from './src/Routes/GroupDocumentsRouter.js';
+import investigationRouter from './src/Routes/InvestigationRouter.js';
 
 
 
@@ -89,6 +91,8 @@ app.use('/api/department', departmentRouter);
 app.use('/api/document', documentRouter);
 app.use("/api/availability", availabilityRouter);
 app.use("/api/review", reviewRouter);
+app.use("/api/groupDocuments", groupDcoumentRouter);
+app.use("/api/investigation", investigationRouter);
 
 
 

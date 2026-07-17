@@ -58,7 +58,7 @@ departmentRouter.post("/create",checkAuth,checkSuperAdmin,validateRequest(Deparm
  *       200:
  *         description: Department updated successfully.
  */
-departmentRouter.patch("/verify",checkAuth,checkSuperAdmin, validateRequest(updateDepartmentValidation), updateDepartmentController);
+departmentRouter.patch("/update",checkAuth,checkSuperAdmin, validateRequest(updateDepartmentValidation), updateDepartmentController);
 
 
 /**

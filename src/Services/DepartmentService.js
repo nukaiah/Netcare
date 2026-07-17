@@ -7,6 +7,7 @@ const createDepartmentService = async (departmentData) => {
 
 const updateDepartmentService = async (departmentData) => {
     const { id, ...remainData } = departmentData || {};
+    
     const response = await DepartmentModel.findByIdAndUpdate(id, { $set: remainData }, { new: true, returnDocument: true });
     return response;
 };

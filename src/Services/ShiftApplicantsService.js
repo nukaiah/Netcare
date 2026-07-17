@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import UserModels from "../Models/UserModels.js";
 import { sendBulkNotification } from '../Utils/fcm.js';
 
+
 const GetHopitalShiftApplicantsService = async () => {
     const response = await ShiftApplicants.aggregate([
         // Applicant
@@ -101,14 +102,14 @@ const GetHopitalShiftApplicantsService = async () => {
                 path: "$designation",
                 preserveNullAndEmptyArrays: true
             }
-        },
+        }
     ]);
 
     return response;
 };
 
 
-const showInterestService = async (applicationData) => {    
+const showInterestService = async (res,applicationData) => {
     const { hospitalId, ...data } = applicationData;
     const hospitalData = await UserModels.findById(hospitalId);
     const response = await ShiftApplicants.create(data);
@@ -125,7 +126,7 @@ const showInterestService = async (applicationData) => {
 };
 
 
-const actionService = async (res,actionData) => {
+const actionService = async (res, actionData) => {
     const { sId, status, userId, hospitalName, shiftDate } = actionData;
     const response = await ShiftApplicants.findByIdAndUpdate(
         sId,
@@ -206,8 +207,8 @@ const getApplicantsService = async (shiftId) => {
 };
 
 
-const punchTimeService = async (res,punchData) => {
-    const {sId, type, workerId} = punchData
+const punchTimeService = async (res, punchData) => {
+    const { sId, type, workerId } = punchData
 
     let update = {};
 

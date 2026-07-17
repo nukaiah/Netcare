@@ -1,16 +1,39 @@
 import ReviewModel from "../Models/ReviewModel.js";
+import CountersModel from "../Models/CounterModel.js";
+import { generateSequence } from "../Utils/SequenceGenerator.js";
+import { createInvestigationService } from "./InvestigationService.js";
+import ShiftApplication from "../Models/ShiftApplicantsModel.js";
 
-const createReviewService = async (data) => {
-    const response = await ReviewModel.create(data);
+const createReviewService = async (reviewData) => {
+    console.log(reviewData);
+    const { rating } = reviewData || {};
+    const response = await ReviewModel.create(reviewData);
+    if (rating < 3) {
+        const investigationId = await generateSequence("INVESTIGATION");
+        const investigationData = {
+            "investigationId": investigationId,
+            "reviewId": response._id,
+            "shiftId": reviewData.shiftId,
+            "shiftApplicationId": reviewData.shiftApplicationId,
+            "hospitalId": reviewData.reviewerId,
+            "healthcareWorkerId": reviewData.targetId,
+            "incidentTypes": reviewData.incidentTypes,
+            "reason": reviewData.message,
+            "createdBy":reviewData.reviewerId
+        };
+        const invesrtigationResponse = await createInvestigationService(investigationData);
+        
+    }
     let query = {};
-    if (data.reviewerType === "facility") {
+    if (reviewData.reviewerType === "facility") {
         query = { isAdminReview: true };
     }
-    if (data.reviewerType === "worker") {
+    if (reviewData.reviewerType === "worker") {
         query = { isUserReview: true };
     }
-    const result = await ShiftApplication.findByIdAndUpdate(data.shiftApplicationId, { $set: query });
-    return result;
+    const result = await ShiftApplication.findByIdAndUpdate(reviewData.shiftApplicationId, { $set: query });
+
+    return response;
 };
 
 const paymentService = async () => {
@@ -40,4 +63,6 @@ const paymentService = async () => {
 
 
 export { createReviewService, paymentService }
+
+
 
