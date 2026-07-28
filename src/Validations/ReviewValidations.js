@@ -61,4 +61,12 @@ const createReviewValidation = Joi.object({
     }),
 });
 
-export { createReviewValidation };
+
+const getReviewsValidation = Joi.object({
+    shiftApplicationId: Joi.string().required().messages({
+        "any.required": "Shift application id is required",
+        "string.empty": "Shift application id cannot be empty",
+    })
+});
+
+export { createReviewValidation,getReviewsValidation };

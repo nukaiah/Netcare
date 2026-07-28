@@ -1,11 +1,9 @@
 import ReviewModel from "../Models/ReviewModel.js";
-import CountersModel from "../Models/CounterModel.js";
 import { generateSequence } from "../Utils/SequenceGenerator.js";
 import { createInvestigationService } from "./InvestigationService.js";
-import ShiftApplication from "../Models/ShiftApplicantsModel.js";
+import ShiftApplication from "../Models/ShiftApplicantionModel.js";
 
 const createReviewService = async (reviewData) => {
-    console.log(reviewData);
     const { rating } = reviewData || {};
     const response = await ReviewModel.create(reviewData);
     if (rating < 3) {
@@ -19,21 +17,24 @@ const createReviewService = async (reviewData) => {
             "healthcareWorkerId": reviewData.targetId,
             "incidentTypes": reviewData.incidentTypes,
             "reason": reviewData.message,
-            "createdBy":reviewData.reviewerId
+            "createdBy": reviewData.reviewerId
         };
         const invesrtigationResponse = await createInvestigationService(investigationData);
-        
     }
     let query = {};
     if (reviewData.reviewerType === "facility") {
-        query = { isAdminReview: true };
+        query = { isHospitalReview: true };
     }
     if (reviewData.reviewerType === "worker") {
-        query = { isUserReview: true };
+        query = { isWorkerReview: true };
     }
-    const result = await ShiftApplication.findByIdAndUpdate(reviewData.shiftApplicationId, { $set: query });
-
+    const result = await ShiftApplication.findByIdAndUpdate(reviewData.shiftApplicationId, { $set: query }, { runValidators: true, returnDocument: 'after' });
     return response;
+};
+
+const getReviewsService = async (shiftApplicationId) => {
+    const result = await ReviewModel.find({ "shiftApplicationId": shiftApplicationId });
+    return result;
 };
 
 const paymentService = async () => {
@@ -62,7 +63,7 @@ const paymentService = async () => {
 
 
 
-export { createReviewService, paymentService }
+export { createReviewService, getReviewsService, paymentService }
 
 
 

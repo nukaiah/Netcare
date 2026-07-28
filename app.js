@@ -13,9 +13,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-
-
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
   swaggerOptions: {
@@ -24,17 +21,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   },
 }),
 );
+
 app.use("/uploads", express.static("uploads"));
-
-
-
-
-;
-
-
-
-
-
 
 
 
@@ -58,7 +46,7 @@ import departmentRouter from './src/Routes/DepartmentRouter.js';
 import experianceRouter from './src/Routes/ExperianceRouter.js';
 import documentRouter from './src/Routes/DocumentRouter.js';
 import shiftpostRouter from './src/Routes/ShiftPostRouter.js';
-import shiftApplicantRouter from './src/Routes/ShiftApplicantRouter.js';
+import shiftApplicantionRouter from './src/Routes/ShiftApplicantionRouter.js';
 import superAdminRouter from './src/Routes/SuperAdminDashboardRouter.js';
 import documentActivityRouter from './src/Routes/DocumentActivityRouter.js';
 import preferenceRouter from './src/Routes/PrefernceRouter.js';
@@ -66,6 +54,7 @@ import availabilityRouter from './src/Routes/AvailabilityRouter.js';
 import reviewRouter from './src/Routes/ReviewRouter.js';
 import groupDcoumentRouter from './src/Routes/GroupDocumentsRouter.js';
 import investigationRouter from './src/Routes/InvestigationRouter.js';
+import generateReportRouter from './src/Routes/GenerateReportsRouter.js';
 
 
 
@@ -80,7 +69,7 @@ app.use('/api/location', locationRouter);
 app.use("/api/otp", otpRouter);;
 app.use('/api/qualification', qualificationRouter);
 app.use('/api/shift', shiftpostRouter);
-app.use('/api/shiftApplication', shiftApplicantRouter);
+app.use('/api/shiftApplication', shiftApplicantionRouter);
 app.use('/api/superAdmin', superAdminRouter);
 app.use("/api/user", userRouter);
 app.use("/api/documentActivity", documentActivityRouter);
@@ -93,6 +82,7 @@ app.use("/api/availability", availabilityRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/groupDocuments", groupDcoumentRouter);
 app.use("/api/investigation", investigationRouter);
+app.use("/api/reports", generateReportRouter);
 
 
 

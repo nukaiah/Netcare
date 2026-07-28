@@ -3,6 +3,7 @@ import UserModels from "../Models/UserModels.js";
 import generateOtp from "../Utils/GenerateOtp.js";
 import { otpTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
 import { sendEmail } from "../Utils/Email.js";
+import sendMobileSmsOtp from "../Utils/MobileOtp.js";
 
 const saveOtpService = async (otpData) => {
     const { email, mobileNumber } = otpData || {};
@@ -17,9 +18,9 @@ const saveOtpService = async (otpData) => {
         ]
     });
     const emailOtp = await generateOtp();
-    const mobileOtp = "123456";
-    console.log(emailOtp);
-    console.log(mobileOtp);
+    const mobileOtp = await generateOtp();
+    console.log(`Email Otp : ${emailOtp}`);
+    console.log(`Email Otp : ${mobileOtp}`);
     const emailData = {
         type: "Register",
         mode: "Email",
@@ -37,11 +38,7 @@ const saveOtpService = async (otpData) => {
     const data = [emailData, mobileData];
     const response = await OtpModel.insertMany(data);
     const template = otpTemplate(emailOtp, email);
-    const emailResponse = await sendEmail(email, template.subject, template.html);
-    if (emailResponse === "error") {
-        return "Email Failed";
-    }
-
+    const [emailResponse, mobileResponse] = await Promise.all([sendEmail(email, template.subject, template.html), sendMobileSmsOtp(mobileNumber, mobileOtp)]);
     return existingUser;
 };
 
@@ -74,6 +71,7 @@ const verifyOtpService = async (otpData) => {
         }
     }
 };
+
 
 const resendOtpService = async (resendOtpData) => {
     const { type, emailMobile, mode } = resendOtpData || {};

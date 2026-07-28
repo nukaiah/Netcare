@@ -14,8 +14,41 @@ const showInterestValidation = Joi.object({
     workerId: Joi.string().required().messages({
         "any.required": "Worker id is required",
         "string.empty": "Worker id cannot be empty"
-    })
+    }),
+
+    status: Joi.string()
+        .valid("Applied", "Approved", "Rejected")
+        .required()
+        .messages({
+            "any.required": "Status is required",
+            "string.empty": "Status cannot be empty",
+            "any.only": "Status must be from enum"
+        }),
+
 });
+
+
+const workerCancellationValidation = Joi.object({
+    shiftId: Joi.string().required().messages({
+        "any.required": "Shift Id is required.",
+        "string.empty": "ShiftId id cannot be empty",
+    }),
+    hospitalId: Joi.string().required().messages({
+        "any.required": "Hospital Id is required.",
+        "string.empty": "Hospital id cannot be empty"
+    }),
+    workerId: Joi.string().required().messages({
+        "any.required": "Worker Id is required.",
+        "string.empty": "WorkerId id cannot be empty"
+    }),
+    reason: Joi.string().trim().min(5).max(500).required().messages({
+        "string.empty": "Cancellation reason is required.",
+        "string.min": "Reason must contain at least 5 characters.",
+        "string.max": "Reason cannot exceed 500 characters."
+    })
+
+});
+
 
 const shiftApplicationActionValidation = Joi.object({
     sId: Joi.string()
@@ -59,6 +92,7 @@ const shiftApplicationActionValidation = Joi.object({
         })
 });
 
+
 const getShiftApplicationValidation = Joi.object({
     shiftId: Joi.string()
         .required()
@@ -66,8 +100,9 @@ const getShiftApplicationValidation = Joi.object({
             "any.required": "Shift id is required",
             "string.empty": "Shift id cannot be empty"
         })
-    
+
 });
+
 
 const punchTimeValidation = Joi.object({
     sId: Joi.string()
@@ -94,4 +129,11 @@ const punchTimeValidation = Joi.object({
         })
 });
 
-export {showInterestValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation};
+
+export {
+    showInterestValidation,
+    workerCancellationValidation,
+    shiftApplicationActionValidation,
+    getShiftApplicationValidation,
+    punchTimeValidation
+};

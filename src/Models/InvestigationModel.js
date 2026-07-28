@@ -101,7 +101,7 @@ const investigationSchema = new mongoose.Schema(
     }
 );
 
-investigationSchema.index({ investigationNumber: 1 }, { unique: true });
+investigationSchema.index({ investigationId: 1 }, { unique: true });
 investigationSchema.index({ reviewId: 1 });
 investigationSchema.index({ shiftId: 1 });
 investigationSchema.index({ status: 1 });

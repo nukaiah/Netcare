@@ -109,12 +109,15 @@ const { swagger: CreateAvailabilityRequest } = j2s(createAvailabilityValidation)
 
 
 /* Avaialability */
-import { createReviewValidation } from './src/Validations/ReviewValidations.js';
+import { createReviewValidation, getReviewsValidation } from './src/Validations/ReviewValidations.js';
 const { swagger: CreateReviewRequest } = j2s(createReviewValidation);
+const { swagger: GetReviewsRequest } = j2s(getReviewsValidation);
+
 
 /* ShiftApplicartion */
-import { showInterestValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation } from './src/Validations/ShiftApplicationValidation.js';
+import { showInterestValidation, workerCancellationValidation, shiftApplicationActionValidation, getShiftApplicationValidation, punchTimeValidation } from './src/Validations/ShiftApplicationValidation.js';
 const { swagger: ShowInterestRequest } = j2s(showInterestValidation);
+const { swagger: WorkerCancellationSchema } = j2s(workerCancellationValidation);
 const { swagger: ShiftApplicationActionRequest } = j2s(shiftApplicationActionValidation);
 const { swagger: GetApplicantsRequest } = j2s(getShiftApplicationValidation);
 const { swagger: PunchTimeRequest } = j2s(punchTimeValidation);
@@ -130,7 +133,7 @@ const options = {
         },
         servers: [
             {
-                url: "http://192.168.0.102:3000",
+                url: "http://124.123.14.2:3333",
                 description: "Development server"
             }
         ],
@@ -222,11 +225,13 @@ const options = {
 
                 /* Review */
                 CreateReviewRequest,
+                GetReviewsRequest,
 
 
 
                 /* ShiftApplicartion */
                 ShowInterestRequest,
+                WorkerCancellationSchema,
                 ShiftApplicationActionRequest,
                 GetApplicantsRequest,
                 PunchTimeRequest

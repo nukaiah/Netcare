@@ -1,7 +1,7 @@
 import express from 'express';
-import { GetHopitalShiftApplicantsController, showInterestController, actionController, getApplicantsController, punchTimeController  } from "../Controllers/ShiftApplicantsController.js";
-import { checkAuth } from "../Utils/Jwt_Token.js";
-import { showInterestValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation } from '../Validations/ShiftApplicationValidation.js';
+import { GetHopitalShiftApplicantsController, applyShiftController,cancelShiftByAdminController,cancelShiftByWorkerController, actionController, getApplicantsController, punchTimeController } from "../Controllers/ShiftApplicantionController.js";
+import { checkAuth,checkHealthcareWorker } from "../Utils/Jwt_Token.js";
+import { showInterestValidation,workerCancellationValidation,shiftApplicationActionValidation,getShiftApplicationValidation,punchTimeValidation } from '../Validations/ShiftApplicationValidation.js';
 const shiftApplicantRouter = express.Router();
 import validateRequest from "../Utils/Vlaidations.js"
 
@@ -13,6 +13,7 @@ import validateRequest from "../Utils/Vlaidations.js"
  *   name: shiftApplication
  *   description: ShiftApplicants Management APIs
  */
+
 
 /**
  * @swagger
@@ -29,6 +30,7 @@ import validateRequest from "../Utils/Vlaidations.js"
  *         description: Recent shift applicants retrieved successfully.
  */
 shiftApplicantRouter.post("/getrecentApplicants", checkAuth,GetHopitalShiftApplicantsController);
+
 
 /**
  * @swagger
@@ -58,7 +60,38 @@ shiftApplicantRouter.post("/getrecentApplicants", checkAuth,GetHopitalShiftAppli
  *       500:
  *         description: Internal server error.
  */
-shiftApplicantRouter.post("/showInterest", checkAuth,validateRequest(showInterestValidation),showInterestController);
+shiftApplicantRouter.post("/showInterest", checkAuth,validateRequest(showInterestValidation),applyShiftController);
+
+
+/**
+ * @swagger
+ * /api/shiftApplication/cancelByUser:
+ *   post:
+ *     tags:
+ *       - shiftApplication
+ *     summary: Cancel approved shift by Healthcare Worker
+ *     description: Allows a healthcare worker to cancel an approved shift. The system automatically calculates the notice period and applies the cancellation policy.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/WorkerCancellationSchema'
+ *     responses:
+ *       200:
+ *         description: Shift cancelled successfully.
+ *       400:
+ *         description: Validation error or shift has already started.
+ *       401:
+ *         description: Unauthorized.
+ *       404:
+ *         description: Shift or approved application not found.
+ *       500:
+ *         description: Internal server error.
+ */
+shiftApplicantRouter.post("/cancelByUser",checkAuth,checkHealthcareWorker,validateRequest(workerCancellationValidation),cancelShiftByWorkerController);
 
 
 /**
@@ -146,6 +179,8 @@ shiftApplicantRouter.post("/getById", checkAuth,validateRequest(getShiftApplicat
  *         description: Internal server error.
  */
 shiftApplicantRouter.post("/punchTime", checkAuth,validateRequest(punchTimeValidation),punchTimeController);
+
+
 
 export default shiftApplicantRouter;
 

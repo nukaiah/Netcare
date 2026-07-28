@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { forbiddenResponse } from '../utils/Response.js';
+import { forbiddenResponse } from '../Utils/Response.js';
 
 
 const generateJwtToken = (id, roleId) => {

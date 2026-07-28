@@ -1,5 +1,5 @@
 import admin from "../config/firebase.js";
-// import healthCareWorkerSchema from '../Models/HealthCareWorkerModel.js';
+import UserModels from "../Models/UserModels.js";
 import { internalServerError } from "../Utils/Response.js";
 
 const sendNotification = async (res, deviceToken, title, body, data = {}) => {
@@ -67,7 +67,7 @@ const sendBulkNotification = async (res, deviceTokens, title, body, data = {}) =
 
   // Remove invalid tokens from DB
   if (invalidTokens.length > 0) {
-    await healthCareWorkerSchema.updateMany(
+    await UserModels.updateMany(
       {},
       { $pull: { fcmTokens: { $in: invalidTokens } } }
     );

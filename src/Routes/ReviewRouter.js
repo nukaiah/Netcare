@@ -1,8 +1,8 @@
 import exprerss from 'express';
-import { createReviewControler, paymentController } from "../Controllers/ReviewController.js"
+import { createReviewControler, getReviewsController, paymentController } from "../Controllers/ReviewController.js"
 import { checkAuth } from "../Utils/Jwt_Token.js"
 import validateRequest from '../Utils/Vlaidations.js';
-import { createReviewValidation } from '../Validations/ReviewValidations.js';
+import { createReviewValidation, getReviewsValidation } from '../Validations/ReviewValidations.js';
 const reviewRouter = exprerss.Router();
 
 
@@ -44,6 +44,28 @@ const reviewRouter = exprerss.Router();
  *         description: Internal server error.
  */
 reviewRouter.post("/create", checkAuth, validateRequest(createReviewValidation), createReviewControler);
+
+/**
+ * @swagger
+ * /api/review/getReviews:
+ *   post:
+ *     tags:
+ *       - Review
+ *     summary: Get reviews for a shift application
+ *     description: Retrieve all reviews for a specific shift application.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GetReviewsRequest'
+ *     responses:
+ *       200:
+ *         description: Reviews retrieved successfully.
+ */
+reviewRouter.post("/getReviews", checkAuth, validateRequest(getReviewsValidation), getReviewsController);
 
 /**
  * @swagger
