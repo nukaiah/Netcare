@@ -133,7 +133,7 @@ const options = {
         },
         servers: [
             {
-                url: "http://124.123.14.2:3333",
+                url: "https://netcare-one.vercel.app/",
                 description: "Development server"
             }
         ],
