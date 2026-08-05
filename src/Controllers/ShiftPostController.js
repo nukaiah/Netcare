@@ -1,4 +1,4 @@
-import { createShiftService, getWebShiftService, getMobileShiftService, getAllMyShiftService, updateShiftStausService, getWebDashboardAnalyticsService } from "../Services/ShiftPostService.js";
+import { createShiftService, getWebShiftService, getMobileShiftService, getAllMyShiftService, updateShiftStausService, getWebDashboardAnalyticsService, getShiftByIdService } from "../Services/ShiftPostService.js";
 import { createResponse, successResponse } from "../Utils/Response.js";
 
 
@@ -27,8 +27,12 @@ const getWebShiftController = async (req, res, next) => {
 
 const getMobileShiftController = async (req, res, next) => {
     try {
-        const prferenceData = req.body || {};
-        const response = await getMobileShiftService(prferenceData);
+        const userId = req.userId;
+        const preferenceData = {
+            ...req.body,
+            userId
+        };
+        const response = await getMobileShiftService(preferenceData);
         return successResponse(res, response, "Shifts found successfully");
     } catch (error) {
         return next(error);
@@ -37,8 +41,11 @@ const getMobileShiftController = async (req, res, next) => {
 
 const getAllMyShiftController = async (req, res, next) => {
     try {
+        const userId = req.userId;
         const paginatedData = req.body || {};
-        const response = await getAllMyShiftService(paginatedData);
+        console.log("User ID:", userId);
+        console.log("Paginated Data:", paginatedData);
+        const response = await getAllMyShiftService(userId, paginatedData);
         return successResponse(res, response, "Shifts found successfully");
     } catch (error) {
         return next(error);
@@ -67,4 +74,16 @@ const getWebDashboardAnalyticsController = async (req, res, next) => {
     }
 };
 
-export { createShiftController, getWebShiftController, getMobileShiftController, getAllMyShiftController, updateShiftStausController,getWebDashboardAnalyticsController};
+
+const getShiftByIdController = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const { shiftId } = req.body || {};
+        const response = await getShiftByIdService(userId,shiftId);
+        return successResponse(res, response, "Shift found successfully");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export { createShiftController, getWebShiftController, getMobileShiftController, getAllMyShiftController, updateShiftStausController, getWebDashboardAnalyticsController, getShiftByIdController };

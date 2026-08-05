@@ -18,6 +18,7 @@ const registrationService = async (userData) => {
     const template = onboardingTemplate(fullName, "", "", roleId);
     const emailResponse = await sendEmail(email, template.subject, template.html);
 
+
     if (emailResponse === "error") {
         return "Email Failed";
     }

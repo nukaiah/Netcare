@@ -89,12 +89,14 @@ const { swagger: DocumentUploadRequest } = j2s(DocumentUplodaValidation);
 const { swagger: VerifyDocumentRequest } = j2s(DocumentUpdateValidation);
 
 /* Shifts */
-import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation, getMyShiftsValidation } from "./src/Validations/ShiftPostValidation.js"
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation, getMyShiftsValidation,getShiftByIdValidation } from "./src/Validations/ShiftPostValidation.js"
 const { swagger: ShiftPostSchema } = j2s(ShiftPostValidation);
 const { swagger: GetWebShiftsSchema } = j2s(getWebShiftsValidation);
 const { swagger: UpdateShiftStatusSchema } = j2s(updateShiftStatusValidation);
 const { swagger: GetAllMobileShiftRequest } = j2s(getAllMobileValidation);
 const { swagger: GetMyShiftsRequest } = j2s(getMyShiftsValidation);
+const { swagger: GetShiftByIdRequest } = j2s(getShiftByIdValidation);
+
 
 
 /* Prefernce */
@@ -122,6 +124,11 @@ const { swagger: ShiftApplicationActionRequest } = j2s(shiftApplicationActionVal
 const { swagger: GetApplicantsRequest } = j2s(getShiftApplicationValidation);
 const { swagger: PunchTimeRequest } = j2s(punchTimeValidation);
 
+/* Shift Attendance*/
+import { createShiftAttendanceValidation, updateShiftAttendanceValidation, getShiftAttendanceValidation } from "./src/Validations/ShiftAttendanceValidation.js";
+const { swagger: CreateShiftAttendance } = j2s(createShiftAttendanceValidation);
+const { swagger: UpdateShiftAttendance } = j2s(updateShiftAttendanceValidation);
+const { swagger: GetShiftAttendance } = j2s(getShiftAttendanceValidation);
 
 const options = {
     definition: {
@@ -214,6 +221,7 @@ const options = {
                 UpdateShiftStatusSchema,
                 GetAllMobileShiftRequest,
                 GetMyShiftsRequest,
+                GetShiftByIdRequest,
 
 
                 /* Prefernce */
@@ -234,8 +242,12 @@ const options = {
                 WorkerCancellationSchema,
                 ShiftApplicationActionRequest,
                 GetApplicantsRequest,
-                PunchTimeRequest
+                PunchTimeRequest,
 
+                /* Shift Attendance */
+                CreateShiftAttendance,
+                UpdateShiftAttendance,
+                GetShiftAttendance
             },
 
             securitySchemes: {
@@ -255,3 +267,6 @@ const options = {
 
 
 export default swaggerJSDoc(options);
+
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTU3Nzc5NmE4ZjA3OGYyYzAwOWZhODciLCJyb2xlSWQiOjMsImlhdCI6MTc4NTMwOTcyOCwiZXhwIjoxNzg1Mzk2MTI4fQ.tX6s7Sr1o4MR2z_tDbe8uxUiSxJcQOytqY5p9dy5zkk

@@ -1,4 +1,5 @@
 import Shifts from "../Models/ShiftPostModel.js";
+import ShiftApplication from "../Models/ShiftApplicantionModel.js";
 import Preference from "../Models/PreferenceModel.js";
 import { sendBulkNotification } from "../Utils/fcm.js";
 import mongoose from "mongoose";
@@ -114,52 +115,68 @@ const getWebShiftService = async (paginatedData) => {
 
 
 const getMobileShiftService = async (preferenceData) => {
-    const { preferredLocation, designationId } = preferenceData || {};
-    const matchQuery = {};
-    const page = Number(preferenceData.page) || 1;
-    const limit = Math.min(Number(preferenceData.limit) || 10, 100);
+    const { preferredLocation, designationId, page, limit, userId } = preferenceData || {};
+    const matchQuery = {
+        "designationId": new mongoose.Types.ObjectId(designationId),
+        "locationId": new mongoose.Types.ObjectId(preferredLocation),
+        "status": "Open"
+    };
     const skip = (page - 1) * limit;
     const response = await Shifts.aggregate([
         { $match: matchQuery },
-        { $sort: { createdAt: -1 } },
+        { $sort: { createdAt: 1 } },
         { $skip: skip },
         { $limit: limit },
         {
             $lookup: {
                 from: "shiftapplications",
-                as: "applicants",
-                let: { queryId: "$_id" },
+                let: {
+                    shiftId: "$_id",
+                    userId: new mongoose.Types.ObjectId(userId)
+                },
                 pipeline: [
                     {
                         $match: {
-                            $expr: { $eq: ["$shiftId", "$$queryId"] }
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$shiftId", "$$shiftId"] },
+                                    { $eq: ["$workerId", "$$userId"] }
+                                ]
+                            }
                         }
                     },
                     {
                         $project: {
-                            workerId: 1,
+                            userId: 1,
                             status: 1
                         }
                     }
-                ]
+                ],
+                as: "application"
             }
         },
     ]);
+    console.log(response);
     return response;
 };
 
 
-const getAllMyShiftService = async (paginatedData) => {
+const getAllMyShiftService = async (userId, paginatedData) => {
+    console.log("User ID:", userId);
+    console.log("Paginated Data:", paginatedData);
+
+
     const page = Number(paginatedData.page) || 1;
     const limit = Math.min(Number(paginatedData.limit) || 10, 100);
     const skip = (page - 1) * limit;
-    const workerObjectId = new mongoose.Types.ObjectId(req.userId);
+
+    const workerObjectId = new mongoose.Types.ObjectId(userId);
     const response = await ShiftApplication.aggregate([
         {
-            $match: { workerId: workerObjectId }
+            $match: { workerId: workerObjectId, "status": paginatedData.status }
         },
         {
-            $sort: { createdAt: -1 }
+            $sort: { createdAt: 1 }
         },
         {
             $skip: skip
@@ -273,7 +290,42 @@ const getWebDashboardAnalyticsService = async (hospitalId) => {
     return analytics;
 };
 
+const getShiftByIdService = async (userId,shiftId) => {
+    const result = await Shifts.aggregate([
+        { $match: { "_id": new mongoose.Types.ObjectId(shiftId) } },
+        {
+            $lookup: {
+                from: "shiftapplications",
+                let: {
+                    shiftId: "$_id",
+                    userId: new mongoose.Types.ObjectId(userId)
+                },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$shiftId", "$$shiftId"] },
+                                    { $eq: ["$workerId", "$$userId"] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            userId: 1,
+                            status: 1
+                        }
+                    }
+                ],
+                as: "application"
+            }
+        },
+    ]);
+    return result;
+};
 
 
 
-export { createShiftService, getWebShiftService, getMobileShiftService, getAllMyShiftService, updateShiftStausService,getWebDashboardAnalyticsService };
+
+export { createShiftService, getWebShiftService, getMobileShiftService, getAllMyShiftService, updateShiftStausService, getWebDashboardAnalyticsService, getShiftByIdService };

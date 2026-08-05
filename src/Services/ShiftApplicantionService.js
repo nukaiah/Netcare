@@ -205,7 +205,6 @@ const cancelShiftByWorkerService = async (res, workerCancellationData) => {
         {
             shiftId,
             workerId,
-            status: "Approved"
         },
         {
             $set: {

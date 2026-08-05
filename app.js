@@ -55,6 +55,7 @@ import reviewRouter from './src/Routes/ReviewRouter.js';
 import groupDcoumentRouter from './src/Routes/GroupDocumentsRouter.js';
 import investigationRouter from './src/Routes/InvestigationRouter.js';
 import generateReportRouter from './src/Routes/GenerateReportsRouter.js';
+import ShiftAttendanceRouter from './src/Routes/ShiftAttendanceRouter.js';
 
 
 
@@ -83,6 +84,7 @@ app.use("/api/review", reviewRouter);
 app.use("/api/groupDocuments", groupDcoumentRouter);
 app.use("/api/investigation", investigationRouter);
 app.use("/api/reports", generateReportRouter);
+app.use("/api/attendance", ShiftAttendanceRouter);
 
 
 

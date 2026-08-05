@@ -7,7 +7,7 @@ import {
     getApplicantsService,
     punchTimeService
 } from "../Services/ShiftApplicantionService.js";
-import { notFoundResponse, successResponse } from "../Utils/Response.js";
+import { notFoundResponse, successResponse,conflictResponse } from "../Utils/Response.js";
 
 const GetHopitalShiftApplicantsController = async (req, res, next) => {
     try {
@@ -24,8 +24,11 @@ const applyShiftController = async (req, res, next) => {
         const applicationData = req.body || {};
         console.log(applicationData);
         const result = await applyShiftService(res, applicationData);
-        return successResponse(res, result, "Applicants found");
+        return successResponse(res, result, "Applied shift Suucessfully.");
     } catch (error) {
+         if(error.code===11000){
+            return conflictResponse(res,"You alreay applied to this shift");
+        }
         return next(error);
     }
 };
@@ -37,8 +40,8 @@ const cancelShiftByAdminController = async (req, res, next) => {
         const result = await cancelShiftByAdminService(res, shiftId);
         return successResponse(res, result, "Shift cancelled successfully.");
     } catch (error) {
-        if(error.message === "Shift not found."){
-            return notFoundResponse(res,error.message);
+        if (error.message === "Shift not found.") {
+            return notFoundResponse(res, error.message);
         }
         return next(error);
     }
@@ -112,4 +115,4 @@ const punchTimeController = async (req, res, next) => {
 };
 
 
-export { GetHopitalShiftApplicantsController, applyShiftController, cancelShiftByAdminController,cancelShiftByWorkerController, actionController, getApplicantsController, punchTimeController };
+export { GetHopitalShiftApplicantsController, applyShiftController, cancelShiftByAdminController, cancelShiftByWorkerController, actionController, getApplicantsController, punchTimeController };

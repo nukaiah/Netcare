@@ -2,8 +2,8 @@ import express from 'express';
 const shiftpostRouter = express.Router();
 import { checkAuth, checkHealthcareWorker, checkhospitalAdmin } from '../Utils/Jwt_Token.js';
 import validateRequest from '../Utils/Vlaidations.js';
-import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation,getAllMobileValidation,getMyShiftsValidation} from '../Validations/ShiftPostValidation.js';
-import { createShiftController, getWebShiftController, getMobileShiftController, getAllMyShiftController, updateShiftStausController, getWebDashboardAnalyticsController } from "../Controllers/ShiftPostController.js";
+import { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation, getMyShiftsValidation,getShiftByIdValidation } from '../Validations/ShiftPostValidation.js';
+import { createShiftController, getWebShiftController, getMobileShiftController, getAllMyShiftController, updateShiftStausController, getWebDashboardAnalyticsController, getShiftByIdController } from "../Controllers/ShiftPostController.js";
 
 
 
@@ -13,6 +13,7 @@ import { createShiftController, getWebShiftController, getMobileShiftController,
  *   - name: Shifts
  *     description: SHift Management APIs
  */
+
 
 /**
  * @swagger
@@ -35,6 +36,7 @@ import { createShiftController, getWebShiftController, getMobileShiftController,
  *         description: Shift created successfully.
  */
 shiftpostRouter.post("/create", checkAuth, checkhospitalAdmin, validateRequest(ShiftPostValidation), createShiftController);
+
 
 /**
  * @swagger
@@ -80,16 +82,8 @@ shiftpostRouter.post("/getAllWeb", checkAuth, checkhospitalAdmin, validateReques
  *     responses:
  *       200:
  *         description: Shifts fetched successfully.
- *       400:
- *         description: Validation error.
- *       401:
- *         description: Unauthorized.
- *       403:
- *         description: Only healthcare workers can access this endpoint.
- *       500:
- *         description: Internal server error.
  */
-shiftpostRouter.post("/getAllMobile", checkAuth, checkHealthcareWorker,validateRequest(getAllMobileValidation), getMobileShiftController);
+shiftpostRouter.post("/getAllMobile", checkAuth, checkHealthcareWorker, validateRequest(getAllMobileValidation), getMobileShiftController);
 
 
 /**
@@ -118,7 +112,8 @@ shiftpostRouter.post("/getAllMobile", checkAuth, checkHealthcareWorker,validateR
  *       500:
  *         description: Internal server error.
  */
-shiftpostRouter.post("/getAllMyShifts", checkAuth, checkHealthcareWorker, validateRequest(getMyShiftsValidation),getMobileShiftController);
+shiftpostRouter.post("/getAllMyShifts", checkAuth, checkHealthcareWorker, validateRequest(getMyShiftsValidation), getAllMyShiftController);
+
 
 /**
  * @swagger
@@ -168,6 +163,30 @@ shiftpostRouter.patch("/updateStatus", checkAuth, checkhospitalAdmin, validateRe
  *         description: Dashboard analytics retrieved successfully.
  */
 shiftpostRouter.post("/getDashboard", checkAuth, checkhospitalAdmin, getWebDashboardAnalyticsController);
+
+
+/**
+ * @swagger
+ * /api/shift/getShiftById:
+ *   post:
+ *     summary: Get shift details by ID
+ *     tags:
+ *       - Shifts
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GetShiftByIdRequest'
+ *     responses:
+ *       200:
+ *         description: Shift details fetched successfully.
+ */
+shiftpostRouter.post("/getShiftById",checkAuth,validateRequest(getShiftByIdValidation),getShiftByIdController);
+
+
 
 
 export default shiftpostRouter;

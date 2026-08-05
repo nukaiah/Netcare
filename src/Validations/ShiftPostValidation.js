@@ -124,10 +124,14 @@ const updateShiftStatusValidation = Joi.object({
 
 const getAllMobileValidation = Joi.object({
     preferredLocation: Joi.string().optional().messages({
+        "any.required": "Preferred location is required",
+        "string.empty": "Preferred location cannot be empty",
         "string.base": "Preferred location must be a string"
     }),
 
     designationId: Joi.string().optional().messages({
+        "any.required": "Designation id is required",
+        "string.empty": "Designation id cannot be empty",
         "string.base": "Designation id must be a string"
     }),
 
@@ -169,8 +173,22 @@ const getMyShiftsValidation = Joi.object({
             "number.integer": "Limit must be an integer",
             "number.min": "Limit must be greater than or equal to 1",
             "number.max": "Limit cannot be greater than 100"
+        }),
+    status: Joi.string()
+        .valid("Applied", "Approved", "Rejected", "Cancelled", "Completed")
+        .optional()
+        .messages({
+            "any.only": "Shift status is not valid"
         })
 });
 
+const getShiftByIdValidation = Joi.object({
+    shiftId: Joi.string().optional().messages({
+        "any.required": "Shift id is required",
+        "string.empty": "Shift id cannot be empty",
+        "string.base": "Shift id must be a string"
+    })
+});
 
-export { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation,getMyShiftsValidation };
+
+export { ShiftPostValidation, getWebShiftsValidation, updateShiftStatusValidation, getAllMobileValidation, getMyShiftsValidation,getShiftByIdValidation };
