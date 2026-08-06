@@ -22,6 +22,7 @@ const ShiftActivitySchema = new mongoose.Schema(
                 "SHIFT_CANCELLED_BY_ADMIN",
                 "SHIFT_CANCELLED_BY_WORKER",
                 "SHIFT_STARTED",
+                "SHIFT_END",
                 "SHIFT_COMPLETED",
             ],
             required: true,
