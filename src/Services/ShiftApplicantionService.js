@@ -3,6 +3,7 @@ import ShiftApplication from "../Models/ShiftApplicantionModel.js";
 import UserModels from "../Models/UserModels.js";
 import { sendBulkNotification } from '../Utils/fcm.js';
 import Shifts from "../Models/ShiftPostModel.js";
+import { createShiftActivityService } from "./ShiftActivityService.js";
 
 
 
@@ -213,10 +214,24 @@ const cancelShiftByWorkerService = async (res, workerCancellationData) => {
             }
         },
         {
-            new: true,
+            new: false,
             runValidators: true
         }
     );
+    const LogData = {
+        shiftId: response.shiftId,
+        shiftApplicationId: response._id,
+        eventType: "SHIFT_CANCELLED_BY_WORKER",
+        title: "Shift Cancelled",
+        description: "The assigned healthcare worker cancelled their participation in this shift.",
+        performedBy: workerId,
+        metadata: {
+            oldStatus: response.status,
+            newStatus: "Cancelled"
+        }
+
+    };
+    const logResponse = await createShiftActivityService(LogData);
 
     if (!response) {
         throw new Error("Approved shift application not found.");
@@ -242,7 +257,7 @@ const cancelShiftByWorkerService = async (res, workerCancellationData) => {
 };
 
 
-const actionService = async (res, actionData) => {
+const actionService = async (res, performedBy, actionData) => {
     const { sId, status, userId, hospitalName, shiftDate } = actionData;
     const response = await ShiftApplication.findByIdAndUpdate(
         sId,
@@ -257,21 +272,33 @@ const actionService = async (res, actionData) => {
         }
     );
     const userData = await UserModels.findById(userId);
-    if (status === "Approved") {
-        await sendBulkNotification(
-            res,
-            userData.fcm,
-            "Shift Application Approved 🎉",
-            `Good news! Your application for ${hospitalName} on ${shiftDate} has been approved.`
-        );
-    } else {
-        await sendBulkNotification(
-            res,
-            userData.fcm,
-            "Shift Application Update",
-            `Your application for ${hospitalName} on ${shiftDate} was not selected this time.`
-        );
-    }
+    const title = status === "Approved" ? "Shift Application Approved 🎉" : "Shift Application Rejected";
+    const description = status === "Approved" ? `Good news! Your application for ${hospitalName} on ${shiftDate} has been approved.` : `Your application for ${hospitalName} on ${shiftDate} was not selected this time.`;
+
+    const LogData = {
+        shiftId: response.shiftId,
+        shiftApplicationId: sId,
+        eventType: status === "Approved" ? "APPLICATION_APPROVED" : "APPLICATION_REJECTED",
+        title: status === "Approved"
+            ? "Application Approved"
+            : "Application Rejected",
+
+        description: status === "Approved"
+            ? "Your application has been approved."
+            : "Your application was not selected.",
+        performedBy: performedBy,
+        metadata: {
+            oldStatus: "Applied",
+            newStatus: status
+        }
+
+    };
+
+
+    const [notificationResponse, logResponse] = await Promise.all([
+        sendBulkNotification(res, userData.fcm, title, description),
+        createShiftActivityService(LogData),
+    ]);
     return {
         response,
         userData
@@ -347,7 +374,7 @@ const punchTimeService = async (res, punchData) => {
             $set: update
         },
         {
-            new: true,
+            new: false,
             runValidators: true
         }
     );
@@ -355,11 +382,41 @@ const punchTimeService = async (res, punchData) => {
     const userData = await UserModels.findById(workerId);
     console.log(userData);
     if (type === "PunchIn") {
+        const LogData = {
+            shiftId: response.shiftId,
+            shiftApplicationId: response._id,
+            eventType: "SHIFT_STARTED",
+            title: "Shift Started",
+            description: "The healthcare worker has punched in and started the shift.",
+            performedBy: userData._id,
+            metadata: {
+                oldStatus: response.status,
+                newStatus: "Punch-In"
+            }
+        };
+        const logResponse = await createShiftActivityService(LogData);
+        console.log(logResponse);
         await sendBulkNotification(res, userData.fcm, "Shift Punch-In Alert", `${userData.fullName} has punched in and started the scheduled shift.`);
     }
     else {
+        const LogData = {
+            shiftId: response.shiftId,
+            shiftApplicationId: response._id,
+            eventType: "SHIFT_END",
+            title: "Shift end",
+            description: "The healthcare worker has punched out.",
+            performedBy: userData._id,
+            metadata: {
+                oldStatus: response.status,
+                newStatus: "Punch-Out"
+            }
+        };
+        const logResponse = await createShiftActivityService(LogData);
+        console.log(logResponse);
         await sendBulkNotification(res, userData.fcm, "Shift Punch-Out Alert", `${userData.fullName} has punched out and completed the scheduled shift.`);
     }
+
+
     return {
         response,
         userData

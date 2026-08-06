@@ -84,8 +84,9 @@ const cancelShiftByWorkerController = async (req, res, next) => {
 
 const actionController = async (req, res, next) => {
     try {
+        const performedBy = req.userId;
         const actionData = req.body || {};
-        const result = await actionService(res, actionData);
+        const result = await actionService(res,performedBy, actionData);
         return successResponse(res, result, "Applicants found");
     } catch (error) {
         return next(error);

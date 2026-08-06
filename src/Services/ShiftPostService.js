@@ -32,7 +32,7 @@ const createShiftService = async (shiftData, res) => {
                 .flatMap(e => e.fcm)
         )
     ];
-    console.log(response);
+    
     await sendBulkNotification(res, tokens, "🏥 Shift Match Found", `A ${response.departmentName} shift in ${response.locationName} matches your preferences.`);
     return response;
 };
