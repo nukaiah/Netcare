@@ -1,95 +1,113 @@
-import OtpModel from "../Models/OTPModel.js";
+// import OtpModel from "../Models/OTPModel.js";
 import UserModels from "../Models/UserModels.js";
 import generateOtp from "../Utils/GenerateOtp.js";
 import { otpTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
 import { sendEmail } from "../Utils/Email.js";
 import sendMobileSmsOtp from "../Utils/MobileOtp.js";
+import redisClient from "../config/RedisConfig.js";
+import { encrypt, decrypt } from "../Utils/EncryptDecrypt.js";
+
+
 
 const saveOtpService = async (otpData) => {
     const { email, mobileNumber } = otpData || {};
     const existingUser = await UserModels.findOne({ $or: [{ "email": email }, { "mobileNumber": mobileNumber }] });
     if (existingUser) {
-        return "Existed User";
+        throw new Error("Existed User");
     }
-    await OtpModel.deleteMany({
-        $or: [
-            { emailMobile: email, type: "Register", isUsed: false },
-            { emailMobile: mobileNumber, type: "Register", isUsed: false }
-        ]
-    });
-    const emailOtp = await generateOtp();
-    const mobileOtp = await generateOtp();
-    console.log(`Email Otp : ${emailOtp}`);
-    console.log(`Email Otp : ${mobileOtp}`);
+
+    const [emailOtp, mobileOtp, encryptEmail, encryptMobile] = await Promise.all([generateOtp(), generateOtp(), encrypt(email), encrypt(mobileNumber)]);
+
+    const emailKey = `otps:${encryptEmail}`;
+    const mobileKey = `otps:${encryptMobile}`;
+    const OTP_EXPIRY_SECONDS = 300;
+
     const emailData = {
         type: "Register",
         mode: "Email",
-        emailMobile: email,
-        otp: emailOtp.toString(),
-        expireDate: new Date(Date.now() + 5 * 60 * 1000),
+        emailMobile: encryptEmail,
+        isUsed: false,
+        otp: encrypt(emailOtp),
+        expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
     const mobileData = {
         type: "Register",
         mode: "Mobile",
-        emailMobile: mobileNumber,
-        otp: mobileOtp,
-        expireDate: new Date(Date.now() + 5 * 60 * 1000),
+        emailMobile: encryptMobile,
+        isUsed: false,
+        otp: encrypt(mobileOtp),
+        expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
-    const data = [emailData, mobileData];
-    const response = await OtpModel.insertMany(data);
+
+    const [emailRedis, mobileRedis] = await Promise.all([
+        redisClient.json.set(emailKey, "$", emailData),
+        redisClient.json.set(mobileKey, "$", mobileData)
+    ]);
+    const [emailExpire, mobileExpire] = await Promise.all([
+        redisClient.expire(emailKey, OTP_EXPIRY_SECONDS),
+        redisClient.expire(mobileKey, OTP_EXPIRY_SECONDS),
+    ]);
     const template = otpTemplate(emailOtp, email);
     const [emailResponse, mobileResponse] = await Promise.all([sendEmail(email, template.subject, template.html), sendMobileSmsOtp(mobileNumber, mobileOtp)]);
-    return existingUser;
+    return true;
 };
 
-
 const verifyOtpService = async (otpData) => {
-    const now = new Date();
-    const response = await OtpModel.findOneAndUpdate(
-        {
-            ...otpData,
-            isUsed: false,
-            expireDate: { $gt: now }
-        },
-        { $set: { isUsed: true } },
-        { sort: { createdAt: -1 }, new: true }
-    );
-    if (response) {
-        return response
-    };
+    const { emailMobile, otp } = otpData || {};
+    const encryptData = await encrypt(emailMobile);
+    const key = `otps:${encryptData}`;
+    const redis = await redisClient.duplicate();
+    await redis.connect();
+    try {
+        await redis.watch(key);
+        const response = await redis.json.get(key);
 
-    if (!response) {
-        const check = await OtpModel.findOne(otpData).sort({ createdAt: -1 });
-        if (!check) {
-            return "Invalid";
+        if (!response) {
+            throw new Error("Otp Not Found");
         }
-        if (check.isUsed) {
-            return "Used";
+        const decryptOtp = decrypt(response.otp); 
+        if (decryptOtp !== otp) {
+            throw new Error("Invalid otp");
         }
-        if (check.expireDate < now) {
-            return "Expired"
+
+        const now = new Date();
+        const expireDate = new Date(response.expireDate);
+
+        if (expireDate <= now) {
+            throw new Error("Expired otp");
         }
+
+        const transaction = redis.multi();
+
+        transaction.json.del(key);
+
+        const result = await transaction.exec();
+
+        if (result === null) {
+            throw new Error("Otp Used");
+        }
+
+        return true;
+
+    } finally {
+        await redis.quit();
     }
 };
 
 
 const resendOtpService = async (resendOtpData) => {
     const { type, emailMobile, mode } = resendOtpData || {};
-    await OtpModel.deleteMany({ emailMobile, type, mode, isUsed: false });
-
-    const otp = await generateOtp();
-
+    const [otp,encryptData] = await Promise.all([generateOtp(),encrypt(emailMobile)]);
+    const key = `otps:${encryptData}`;
+    const OTP_EXPIRY_SECONDS = 300;
     const otpData = {
-        type: type,
-        mode: mode,
-        emailMobile: emailMobile,
-        otp: mode === "Email" ? otp : "123456",
-        expireDate: new Date(Date.now() + 10 * 60 * 1000),
+        emailMobile: encryptData,
+        isUsed: false,
+        otp: encrypt(otp),
+        expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
-    console.log(otp);
-
-    const response = await OtpModel.create(otpData);
-
+    await redisClient.json.set(key, "$", otpData);
+    await redisClient.expire(key, OTP_EXPIRY_SECONDS);
     if (mode === "Email") {
         let template;
         if (type === "ForgotPassword") {
@@ -98,15 +116,15 @@ const resendOtpService = async (resendOtpData) => {
         if (type === "Register") {
             template = otpTemplate(otp, emailMobile);
         }
-        const emailResponse = await sendEmail(emailMobile, template.subject, template.html);
-        if (emailResponse === "error") {
-            return "Email Failed";
-        }
+        await sendEmail(emailMobile, template.subject, template.html);
     }
     if (mode === "Mobile") {
-        // SMS provider here
+        await sendMobileSmsOtp(
+            emailMobile,
+            otp
+        );
     }
-    return response;
+    return true;
 };
 
 

@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
+import redisRouter from './redisStore.js';
 
 const app = express();
 
@@ -23,7 +24,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 );
 
 app.use("/uploads", express.static("uploads"));
-
 
 
 import handleError from './src/Utils/HandelError.js';
@@ -87,6 +87,7 @@ app.use("/api/investigation", investigationRouter);
 app.use("/api/reports", generateReportRouter);
 app.use("/api/attendance", ShiftAttendanceRouter);
 app.use("/api/shiftActivity", ShiftActivityRouter);
+app.use("/api/redis",redisRouter)
 
 
 

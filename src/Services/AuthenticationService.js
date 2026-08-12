@@ -1,11 +1,11 @@
 import userModel from "../Models/UserModels.js";
 import { onboardingTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
 import { sendEmail } from "../Utils/Email.js";
-import { comparePassword } from "../Utils/PasswordHash.js";
+import { comparePassword, hashPassword } from "../Utils/PasswordHash.js";
 import { generateJwtToken } from "../Utils/Jwt_Token.js";
 import generateOtp from "../Utils/GenerateOtp.js";
-import OTPModel from "../Models/OTPModel.js";
-
+import { encrypt } from "../Utils/EncryptDecrypt.js";
+import redisClient from "../config/RedisConfig.js";
 
 
 const registrationService = async (userData) => {
@@ -47,27 +47,33 @@ const loginService = async (loginCreds) => {
     return responseWithToken;
 };
 
-const forgotPasswordService = async (emailData) => {
-    const { email } = emailData || {};
+const forgotPasswordService = async (forgotPasswordData) => {
+    const { email } = forgotPasswordData || {};
     const response = await userModel.findOne({ email }).lean();
     if (!response) {
         return "Not Found";
     }
 
-    await OTPModel.deleteMany({ emailMobile: email, type: "ForgotPassword", isUsed: false });
-    const otp = generateOtp();
-    console.log(otp);
-    const otpData = {
+    const [emailOtp,encryptEmail] = await Promise.all([
+        generateOtp(),
+        encrypt(email),
+    ]);
+
+    const emailKey = `otps:${encryptEmail}`;
+    const OTP_EXPIRY_SECONDS = 300;
+    const emailData = {
         type: "ForgotPassword",
         mode: "Email",
-        emailMobile: email,
-        otp: otp,
-        expireDate: new Date(Date.now() + 5 * 60 * 1000),
+        emailMobile: encryptEmail,
+        isUsed: false,
+        otp: encrypt(emailOtp),
+        expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
-    const isOtpCreated = await OTPModel.create(otpData);
-    const template = forgotPasswordOtpTemplate(otp, response.fullName);
+    await redisClient.json.set(emailKey, "$", emailData);
+    await redisClient.expire(emailKey, OTP_EXPIRY_SECONDS);
+    const template = forgotPasswordOtpTemplate(emailOtp, response.fullName);
     const emailResponse = await sendEmail(email, template.subject, template.html);
-    return response;
+    return true;
 };
 
 const resetPassworService = async (resetPasswordData) => {

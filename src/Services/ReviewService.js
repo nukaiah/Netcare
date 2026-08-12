@@ -2,6 +2,9 @@ import ReviewModel from "../Models/ReviewModel.js";
 import { generateSequence } from "../Utils/SequenceGenerator.js";
 import { createInvestigationService } from "./InvestigationService.js";
 import ShiftApplication from "../Models/ShiftApplicantionModel.js";
+import Razorpay from "razorpay";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const createReviewService = async (reviewData) => {
     const { rating } = reviewData || {};
@@ -38,27 +41,27 @@ const getReviewsService = async (shiftApplicationId) => {
 };
 
 const paymentService = async () => {
-    var instance = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-    const options = {
-        amount: 100 * 100,
-        currency: "INR",
-        receipt: "receipt_"
-    };
-    const response = await instance.orders.create({
-        "amount": 50000,
-        "currency": "INR",
-        "receipt": "receipt#1",
-        "partial_payment": false,
-        "notes": {
-            "key1": "value3",
-            "key2": "value2"
-        }
-    });
-    const order = await instance.orders.all();
-    return response;
+    try {
+        const instance = new Razorpay({
+            key_id: "rzp_test_TMorDBxuKw6Y2w",
+            key_secret: "5XrV6O50i0eAqLEz0QxMJk5h",
+        });
+        const order = await instance.orders.create({
+            amount: 50000, // ₹500.00 (amount is in paise)
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+            partial_payment: false,
+            notes: {
+                key1: "value1",
+                key2: "value2",
+            },
+        });
+
+        return order;
+    } catch (error) {
+        console.error("Razorpay Error:", error);
+        throw error;
+    }
 };
 
 

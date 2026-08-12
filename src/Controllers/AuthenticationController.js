@@ -42,7 +42,7 @@ const forgotPasswordController = async (req, res, next) => {
         if (response === "Not Found") {
             return notFoundResponse(res, "We couldn't find an account with this email");
         }
-        return createResponse(res, null, "Please check your email for the OTP to reset your password");
+        return createResponse(res, response, "Please check your email for the OTP to reset your password");
     } catch (error) {
         return next(error);
     }
