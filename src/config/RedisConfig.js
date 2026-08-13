@@ -13,12 +13,8 @@ const redisClient = createClient({
     }
 });
 
-redisClient.on("connect", () => {
-    console.log("Redis connecting...");
-});
-
 redisClient.on("ready", () => {
-    console.log("Redis connected successfully");
+    console.log("Redis connected successfully ✅");
 });
 
 redisClient.on("error", (error) => {
