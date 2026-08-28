@@ -1,5 +1,7 @@
 import { createBankService, getAllBanksService } from "../Services/BankServices.js"
 import { createResponse, successResponse } from "../Utils/Response.js";
+import sendMobileSmsOtp from "../Utils/MobileOtp.js";
+import generateOtp from "../Utils/GenerateOtp.js"
 
 const createBankController = async (req, res, next) => {
     try {
@@ -20,4 +22,16 @@ const getAllBanksController = async (req, res, next) => {
     }
 }
 
-export { createBankController, getAllBanksController };
+const sendOtpController = async (req, res, next) => {
+    try {
+        const {mobile } = req.body || {};
+        const otp = await generateOtp();
+        console.log(otp);
+        const response = await sendMobileSmsOtp(mobile, otp);
+        return successResponse(res, response, "Otp sent successfully");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export { createBankController, getAllBanksController,sendOtpController };

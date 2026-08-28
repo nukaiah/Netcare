@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push and Deploy
 
 on:
   push:
@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       # 1. Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
+
 
       # 2. Login to Docker Hub
       - name: Login to Docker Hub
@@ -21,12 +23,50 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+
       # 3. Build Docker Image
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest .
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest .
+
 
       # 4. Push Docker Image
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest
+
+
+      # 5. Deploy to Server
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+
+          script: |
+            echo "Pulling latest Docker image..."
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest
+
+            echo "Stopping old container..."
+
+            docker stop shiftmatch-backend || true
+
+            echo "Removing old container..."
+
+            docker rm shiftmatch-backend || true
+
+            echo "Starting new container..."
+
+            docker run -d \
+              --name shiftmatch-backend \
+              --restart unless-stopped \
+              -p 3333:3000 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/shiftmatch-backend:latest
+
+            echo "Deployment completed."
+
+            docker ps

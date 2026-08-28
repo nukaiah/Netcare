@@ -5,25 +5,26 @@ dotenv.config();
 
 const sendMobileSmsOtp = async (mobile, otp) => {
     try {
+        console.log(otp);
         const response = await axios.post(
             "https://control.msg91.com/api/v5/flow",
             {
                 template_id: process.env.template_id,
                 recipients: [
                     {
-                        mobiles: `27${mobile}`, // Country Code + Mobile
-                        OTP: otp,
+                        mobiles: `91${mobile}`, // Country Code + Mobile
+                        var: otp
                     },
                 ],
             },
             {
                 headers: {
-                    authkey: process.env.authkey,
                     "Content-Type": "application/json",
+                    authkey: process.env.authkey
                 },
             }
         );
-
+        console.log(response);
         return response.data;
     } catch (error) {
         console.error(

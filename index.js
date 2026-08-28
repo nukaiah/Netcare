@@ -10,10 +10,9 @@ const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
-    await connectDb();
-    await redisClient.connect();
+    const response = await Promise.allSettled([redisClient.connect(),connectDb()]);
     server.listen(PORT, '0.0.0.0', () => {
-      console.log(`User Service running on ${PORT} 🚀`);
+      console.log(`User Service running on ${PORT} ✅ 🚀`);
     });
   } catch (err) {
     console.error('Failed to start server:', err.message);

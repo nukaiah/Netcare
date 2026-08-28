@@ -5,7 +5,6 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
-import redisRouter from './redisStore.js';
 
 const app = express();
 
@@ -60,6 +59,7 @@ import ShiftActivityRouter from './src/Routes/ShiftActivityRouter.js';
 
 
 
+
 app.use("/api/address", addressRouter);
 app.use("/api/aufitLog", auditLogRouter);
 app.use("/api/authentication", authenticationRouter);
@@ -87,7 +87,6 @@ app.use("/api/investigation", investigationRouter);
 app.use("/api/reports", generateReportRouter);
 app.use("/api/attendance", ShiftAttendanceRouter);
 app.use("/api/shiftActivity", ShiftActivityRouter);
-app.use("/api/redis",redisRouter)
 
 
 

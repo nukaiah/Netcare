@@ -3,11 +3,13 @@ import mongoose from "mongoose";
 const connectDb = async () => {
     try {
         const DB_URL = process.env.CLOUD_DB_URL_TEST;
-        await mongoose.connect(DB_URL);
-        console.log('MongoDB Connected ✅');
+        const connection = await mongoose.connect(DB_URL);
+        console.log('MongoDB Connected successfully ✅ 🚀');
+        return "Hoah!,Connected to your database.";
     } catch (error) {
         console.error('DB Error:', error.message);
-        process.exit(1);
+        // process.exit(1);
+        return "Oh snap!. Failed to connect."
     }
 };
 
