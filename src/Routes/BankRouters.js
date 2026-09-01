@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBankController, getAllBanksController, sendOtpController } from "../Controllers/BankController.js";
+import { createBankController, getAllBanksController } from "../Controllers/BankController.js";
 import { createBankValidation } from '../Validations/BanksValidation.js';
 import validateRequest from '../Utils/Vlaidations.js';
 import { checkAuth } from "../Utils/Jwt_Token.js";
@@ -50,6 +50,5 @@ bankRouter.post("/create", checkAuth,validateRequest(createBankValidation), crea
  */
 bankRouter.get("/getAll", checkAuth, getAllBanksController);
 
-bankRouter.post("/otp",sendOtpController);
 
 export default bankRouter;

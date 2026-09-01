@@ -6,7 +6,7 @@ const createBankService = async (bankData) => {
 };
 
 const getAllBanksService = async () => {
-    const response = await Banks.find().sort({ bankName: 1 });
+    const response = await Banks.find().sort({ bankName: 1 }).lean();
     return response;
 };
 
