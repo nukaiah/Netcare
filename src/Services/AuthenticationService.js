@@ -18,19 +18,20 @@ const registrationService = async (userData) => {
     return response;
 };
 
+
 const loginService = async (loginCreds) => {
     const { email, password } = loginCreds || {};
     const userData = await userModel.findOne({ email, isDeleted: false }).select("+password").lean();
     if (!userData) {
-        return "Not Found";
+        throw new Error("Not Found");
     }
 
     if (userData.accountStatus !== "Active") {
-        return "Account Suspended/Inactive";
+        throw new Error("Account Suspended/Inactive");
     }
     const isPasswordCorrect = await comparePassword(password, userData.password);
     if (!isPasswordCorrect) {
-        return "Password Incorrect";
+        throw new Error("Password Incorrect");
     }
     userData.password = undefined;
 
@@ -39,63 +40,58 @@ const loginService = async (loginCreds) => {
     return responseWithToken;
 };
 
+
 const forgotPasswordService = async (forgotPasswordData) => {
     const { email } = forgotPasswordData || {};
     const response = await userModel.findOne({ email }).lean();
     if (!response) {
-        return "Not Found";
+        throw new Error("Not Found");
     }
-
-    const [emailOtp,encryptEmail] = await Promise.allSettled([generateOtp(),encrypt(email)]);
-
-    console.log(emailOtp.value);
-    console.log(encryptEmail.value);
-
-    const emailKey = `otps:${encryptEmail.value}`;
+    const [emailOtp,encryptEmail] = await Promise.all([generateOtp(),encrypt(email)]);
+    const emailKey = `otps:${encryptEmail}`;
     const OTP_EXPIRY_SECONDS = 300;
     const emailData = {
         type: "ForgotPassword",
         mode: "Email",
-        emailMobile: encryptEmail.value,
+        emailMobile: encryptEmail,
         isUsed: false,
-        otp: encrypt(emailOtp.value),
+        otp: encrypt(emailOtp),
         expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
-
-    console.log(emailData);
-
     await redisClient.json.set(emailKey, "$", emailData);
     await redisClient.expire(emailKey, OTP_EXPIRY_SECONDS);
-    const template = forgotPasswordOtpTemplate(emailOtp.value, response.fullName);
+    const template = forgotPasswordOtpTemplate(emailOtp, response.fullName);
     // await emailQueue.add("forgotpassword-email", {email: email,subject: template.subject,html: template.html});
     const emailResponse = await sendEmail(email, template.subject, template.html);
+    console.log(emailResponse);
     return true;
 };
+
 
 const resetPassworService = async (resetPasswordData) => {
     const { email, password } = resetPasswordData || {};
     const response = await userModel.findOneAndUpdate({ email }, { $set: { password } });
     if (!response) {
-        return "Not Found";
+        throw new Error("Not Found");
     }
     return response;
 };
+
 
 const updatePasswordService = async (changePasswordData) => {
     const { id, password, newPassword } = changePasswordData || {};
     const response = await userModel.findById(id).select("+password");
     if (!response) {
-        return "Not Found";
+        throw new Error("Not Found");
     }
     const isPasswordCorrect = await comparePassword(password, response.password);
     if (!isPasswordCorrect) {
-        return "Password Incorrect";
+        throw new Error("Password Incorrect");
     }
     response.password = newPassword;
     await response.save();
     return response;
 };
-
 
 
 export { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService };
