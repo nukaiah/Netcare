@@ -18,13 +18,13 @@ const updateDepartmentController = async (req, res, next) => {
     try {
         const departmentData = req.body || {};
         const response = await updateDepartmentService(departmentData);
-        if (!response) {
-            return notFoundResponse(res, "Department is not found");
-        }
         return successResponse(res, response, "Department updated successfully");
     } catch (error) {
         if (error.code === 11000) {
             return conflictResponse(res, "Department alredy existed");
+        }
+        if (error.message === "Not Found") {
+            return notFoundResponse(res, "Department is not found");
         }
         return next(error);
     }

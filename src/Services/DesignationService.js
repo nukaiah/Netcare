@@ -13,12 +13,15 @@ const updateDesignationService = async (updatedDesignationData) => {
         { $set: remainData },
         { new: true }
     );
+    if(!response){
+        throw new Error("Not Found");
+    }
     return response;
 };
 
 
 const getAllDesignationsService = async () => {
-    const response = await DesignationsModel.find();
+    const response = await DesignationsModel.find().lean();
     return response;
 };
 

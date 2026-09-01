@@ -20,13 +20,13 @@ const updateDesignationController = async (req, res, next) => {
     try {
         const updatedDesignationData = req.body || {};
         const response = await updateDesignationService(updatedDesignationData);
-        if (!response) {
-            return notFoundResponse(res, 'Designation is not found');
-        }
         return successResponse(res, response, "Designation updated successfully");
     } catch (error) {
         if (error.code === 11000) {
             return conflictResponse(res, "Designation is existed already");
+        }
+        if(error.message === "Not Found"){
+            return notFoundResponse(res, 'Designation is not found');
         }
         return next(error);
     }
