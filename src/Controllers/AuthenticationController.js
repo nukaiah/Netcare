@@ -1,4 +1,4 @@
-import { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService, inserMutipleUsersService, getAllUsersService } from "../Services/AuthenticationService.js";
+import { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService } from "../Services/AuthenticationService.js";
 import { conflictResponse, createResponse, notFoundResponse, successResponse } from "../Utils/Response.js";
 
 
@@ -6,10 +6,6 @@ const registrationController = async (req, res, next) => {
     try {
         const userData = req.body || {};
         const response = await registrationService(userData);
-        if (response === "Email Failed") {
-            return conflictResponse(res, null, "Failed to send OTP. Please try again");
-        }
-        console.log(response);
         return createResponse(res, response, "Welcome! You have been onboarded successfully.Your account is now active.");
     } catch (error) {
         return next(error);
@@ -77,26 +73,6 @@ const updatePasswordController = async (req, res, next) => {
     }
 };
 
-const inserMultipleController = async (req, res, next) => {
-    try {
-        const userData = req.body || {};
-        const response = await inserMutipleUsersService(userData);
-        if (response === "Email Failed") {
-            return conflictResponse(res, null, "Failed to send OTP. Please try again");
-        }
-        return createResponse(res, response, "Welcome! You have been onboarded successfully.Your account is now active.");
-    } catch (error) {
-        return next(error);
-    }
-};
 
-const getAllUsersController = async (req, res, next) => {
-    try {
-        const response = await getAllUsersService();
-        return successResponse(res, response, "Hospitals");
-    } catch (error) {
-        return next(error);
-    }
-}
 
-export { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController, inserMultipleController, getAllUsersController };
+export { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController };

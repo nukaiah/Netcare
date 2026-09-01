@@ -1,6 +1,6 @@
 import express from 'express';
 const authenticationRouter = express.Router();
-import { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController, inserMultipleController, getAllUsersController } from '../Controllers/AuthenticationController.js';
+import { registrationController, loginController, forgotPasswordController, resetPasswordController, updatePasswordController} from '../Controllers/AuthenticationController.js';
 import { registerValidationSchema, loginValidationSchema, forgotPasswordValidation, resetPasswordValidation, updatePasswordValidation } from '../Validations/AuthenticationValidation.js';
 import validateRequest from '../Utils/Vlaidations.js';
 
@@ -95,8 +95,6 @@ authenticationRouter.post('/resetPassword',validateRequest(resetPasswordValidati
 
 
 authenticationRouter.post('/updatePassword', validateRequest(updatePasswordValidation), updatePasswordController);
-authenticationRouter.post('/mutiple', inserMultipleController);
-authenticationRouter.get('/getAllHospitals', getAllUsersController);
 
 
 export default authenticationRouter;

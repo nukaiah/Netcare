@@ -174,8 +174,6 @@ const verificationStatusTemplate = (status, facilityName = "Facility Admin") => 
 
 const onboardingTemplate = (
   facilityName = "Facility Admin",
-  email,
-  temporaryPassword,
   roleId
 ) => {
 

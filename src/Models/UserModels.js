@@ -60,9 +60,16 @@ const userModel = new mongoose.Schema(
       default: null
     },
 
-    dob: { type: Date, default: null },
+    dob: { 
+      type: Date,
+       default: null 
+      },
 
-    designationId: { type: String, trim: true, default: null },
+    designationId: {
+       type: String, 
+       trim: true, 
+       default: null
+       },
 
     gender: {
       type: String,

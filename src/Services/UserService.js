@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { decrypt } from "../Utils/EncryptDecrypt.js";
 import { successResponse } from "../Utils/Response.js";
 import { uploadFile, deleteFile } from "../Utils/UploadFile.js";
-import { verificationStatusTemplate, onboardingTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
+import { verificationStatusTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
 import { sendEmail } from "../Utils/Email.js";
 
 const getUserDataByIdService = async (id) => {

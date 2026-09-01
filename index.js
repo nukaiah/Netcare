@@ -10,7 +10,7 @@ const PORT = process.env.PORT;
 
 const startServer = async () => {
   try {
-    const response = await Promise.allSettled([redisClient.connect(),connectDb()]);
+    const response = await Promise.allSettled([connectDb(),redisClient.connect()]);
     server.listen(PORT, '0.0.0.0', () => {
       console.log(`User Service running on ${PORT} ✅ 🚀`);
     });

@@ -1,27 +1,17 @@
 import userModel from "../Models/UserModels.js";
 import { onboardingTemplate, forgotPasswordOtpTemplate } from "../Utils/EmailotpTemplate.js";
-import { sendEmail } from "../Utils/Email.js";
-import { comparePassword, hashPassword } from "../Utils/PasswordHash.js";
+import { comparePassword } from "../Utils/PasswordHash.js";
 import { generateJwtToken } from "../Utils/Jwt_Token.js";
 import generateOtp from "../Utils/GenerateOtp.js";
 import { encrypt } from "../Utils/EncryptDecrypt.js";
 import redisClient from "../config/RedisConfig.js";
+import emailQueue from "../Ques/EmailQues.js";
 
 
 const registrationService = async (userData) => {
     const response = await userModel.create(userData);
-
-    const fullName = response.fullName;
-    const email = response.email;
-    const roleId = response.roleId;
-
-    const template = onboardingTemplate(fullName, "", "", roleId);
-    const emailResponse = await sendEmail(email, template.subject, template.html);
-
-
-    if (emailResponse === "error") {
-        return "Email Failed";
-    }
+    const template = onboardingTemplate(response.fullName, response.roleId);
+    await emailQueue.add("onboarding-email", {email: response.email,subject: template.subject,html: template.html});
     response.password = undefined;
     return response;
 };
@@ -54,25 +44,29 @@ const forgotPasswordService = async (forgotPasswordData) => {
         return "Not Found";
     }
 
-    const [emailOtp,encryptEmail] = await Promise.all([
-        generateOtp(),
-        encrypt(email),
-    ]);
+    const [emailOtp,encryptEmail] = await Promise.allSettled([generateOtp(),encrypt(email)]);
 
-    const emailKey = `otps:${encryptEmail}`;
+    console.log(emailOtp.value);
+    console.log(encryptEmail.value);
+
+    const emailKey = `otps:${encryptEmail.value}`;
     const OTP_EXPIRY_SECONDS = 300;
     const emailData = {
         type: "ForgotPassword",
         mode: "Email",
-        emailMobile: encryptEmail,
+        emailMobile: encryptEmail.value,
         isUsed: false,
-        otp: encrypt(emailOtp),
+        otp: encrypt(emailOtp.value),
         expireDate: new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000),
     };
+
+    console.log(emailData);
+
     await redisClient.json.set(emailKey, "$", emailData);
     await redisClient.expire(emailKey, OTP_EXPIRY_SECONDS);
-    const template = forgotPasswordOtpTemplate(emailOtp, response.fullName);
-    const emailResponse = await sendEmail(email, template.subject, template.html);
+    const template = forgotPasswordOtpTemplate(emailOtp.value, response.fullName);
+    await emailQueue.add("forgotpassword-email", {email: email,subject: template.subject,html: template.html});
+    // const emailResponse = await sendEmail(email, template.subject, template.html);
     return true;
 };
 
@@ -100,14 +94,6 @@ const updatePasswordService = async (changePasswordData) => {
     return response;
 };
 
-const inserMutipleUsersService = async (userData) => {
-    const response = await userModel.insertMany(userData);
-    return response;
-};
 
-const getAllUsersService = async () => {
-    const response = await userModel.find({ roleId: 2 }).collation({ locale: "en", strength: 2 }).sort({ fullName: 1 }).lean();
-    return response;
-};
 
-export { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService, inserMutipleUsersService, getAllUsersService };
+export { registrationService, loginService, forgotPasswordService, resetPassworService, updatePasswordService };
