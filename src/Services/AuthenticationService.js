@@ -6,12 +6,14 @@ import generateOtp from "../Utils/GenerateOtp.js";
 import { encrypt } from "../Utils/EncryptDecrypt.js";
 import redisClient from "../config/RedisConfig.js";
 import emailQueue from "../Ques/EmailQues.js";
+import { sendEmail } from "../Utils/Email.js";
 
 
 const registrationService = async (userData) => {
     const response = await userModel.create(userData);
     const template = onboardingTemplate(response.fullName, response.roleId);
-    await emailQueue.add("onboarding-email", {email: response.email,subject: template.subject,html: template.html});
+    await sendEmail(response.email,template.subject,template.html);
+    // await emailQueue.add("onboarding-email", {email: response.email,subject: template.subject,html: template.html});
     response.password = undefined;
     return response;
 };
@@ -65,8 +67,8 @@ const forgotPasswordService = async (forgotPasswordData) => {
     await redisClient.json.set(emailKey, "$", emailData);
     await redisClient.expire(emailKey, OTP_EXPIRY_SECONDS);
     const template = forgotPasswordOtpTemplate(emailOtp.value, response.fullName);
-    await emailQueue.add("forgotpassword-email", {email: email,subject: template.subject,html: template.html});
-    // const emailResponse = await sendEmail(email, template.subject, template.html);
+    // await emailQueue.add("forgotpassword-email", {email: email,subject: template.subject,html: template.html});
+    const emailResponse = await sendEmail(email, template.subject, template.html);
     return true;
 };
 
