@@ -20,6 +20,9 @@ const getAvailabilityController = async (req, res, next) => {
         const response = await getAvailabilityService(availabilityData);
         return successResponse(res, response, "Availability found successfully");
     } catch (error) {
+        if (error.message === "Not Found") {
+            return notFoundResponse(res, "Availability not found");
+        }
         return next(error);
     }
 };

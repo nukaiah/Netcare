@@ -7,7 +7,10 @@ const createAvailabilityService = async (availabilityData) => {
 
 const getAvailabilityService = async (availabilityData) => {
     const query = { "userId": availabilityData.userId };
-    var response = await AvailabilityModel.find(query);
+    const response = await AvailabilityModel.find(query).lean();
+    if(!response){
+        throw new Error("Not Found");
+    }
     return response;
 };
 
